@@ -1,4 +1,4 @@
-PROJECT=intersection
+PROJECT=particle
 CC=g++
 CC+=-std=c++17
 CFLAGS=-g3
