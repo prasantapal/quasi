@@ -1,3 +1,6 @@
+/**
+ *A Junction  class to implement quasi one dimensional models
+ */
 class Junction{
   public:
     Junction();
