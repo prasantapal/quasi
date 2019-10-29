@@ -1,4 +1,7 @@
+#ifndef PARTICLE_HPP
+#define PARTICLE_HPP
 #include<iostream>
+#include<fstream>
 #include <thread>
 #include <mutex>
 #include <string>
@@ -68,3 +71,4 @@ void Particle::save(){
   }
   file_ << x_ << std::endl;
 }
+#endif

@@ -1,7 +1,12 @@
+#ifndef JUNCTION_HPP
+#define JUNCTION_HPP
 /**
  *A Junction  class to implement quasi one dimensional models
  */
 #include <list>
+#include <iostream>
+#include <string>
+#include <vector>
 class Junction{
   public:
     Junction();
@@ -48,13 +53,13 @@ return is_occupied;
 
 int Junction::max_occupation_ = {2}; ///The maximumum number of particles that can occupy a junction
 //This number is decided by the underlying geometry but in the simplest case it is 2
-unsigned Junction::counter_ = {0};
+unsigned Junction::counter_ = {0}; ///Initialize the counter with zero
 
 void Junction::ctor_helper(){
   id_ = counter_++;
   std::cerr << "setting id:" << id_ << std::endl;
   ///Initialize the occupation status list....this is more efficient than vector push back or pop methods
-  occupation_list_status_ = std::vector<bool>({false,false});
+  occupation_list_status_ = std::vector<bool>(max_occupation_,false);
 }
 
 unsigned Junction::get_id() const {
@@ -117,3 +122,4 @@ void Junction::set_occupation(const short pos){
   }
     }
 
+#endif
