@@ -20,6 +20,7 @@ class Particle{
   private:
     void  ctor_helper();
     double x_;
+    double x_unbounded_;
     unsigned id_;
     static unsigned counter_;
     static std::string filename_;
