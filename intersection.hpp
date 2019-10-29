@@ -1,12 +1,14 @@
 #include "junction.hpp"
-
+/**
+ *Intersection consists of two junctions
+ */
 class Intersection{
   public:
     Intersection();
     ~Intersection();
   private:
     void ctor_helper();
-    std::vector<Junction*> intersection_;
+    std::vector<Junction> intersection_;
     unsigned id_;
     static unsigned counter_;
     static unsigned num_junctions_per_intersection_;
