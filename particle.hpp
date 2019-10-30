@@ -10,23 +10,47 @@ class Particle{
     Particle();
     Particle(const double& x);
     Particle(double&& x);
+    inline double mod_len(const double x) {
+      if(x>=0)
+        return std::fmod(x,system_len_);
+      return (system_len_ - std::fmod(std::fabs(x),system_len_));
+
+    }
+
     void save();
     ~Particle();
     double get_x() const;
-    inline  void update(const double& dx) {x_ += dx; }
-    inline  void update(const double&& dx) {x_ += dx; }
+    double get_system_len() const;
+    double get_len() const;
+    void set_x(const double& x);
+    void set_x(const double&& x);
+    void set_X(const double& x);
+    void set_X(const double&& x);
+    void set_len(const double x) ;
+    void set_system_len(const double x) ;
+    inline bool does_belong_to(const double& x) {
+      auto lower_boundary_ =  x - len_;
+      auto upper_boundary_ =  x + len_;
+      return (x>= lower_boundary_ && x <= upper_boundary_);
+    }
+    inline  void move(const double& dx) {x_ += dx; X_ += dx;}
+    inline  void move(const double&& dx) {x_ += dx; X_ += dx;}
     void set_filename(std::string& filename);
     void time_evolve(const int& n);
   private:
     void  ctor_helper();
-    double x_;
-    double x_unbounded_;
-    unsigned id_;
-    static unsigned counter_;
+    double x_ = {0};
+    double X_ = {0};
+    unsigned id_ = {0};
+    static unsigned counter_;;
     static std::string filename_;
     static std::ofstream file_;
     static std::once_flag seed_initializer_;
+    static double len_;
+    static double system_len_;
 };
+double Particle::len_ = {0};
+double Particle::system_len_ = {0};
 unsigned Particle::counter_ = {0};
 std::once_flag Particle::seed_initializer_;
 std::ofstream Particle::file_;
@@ -49,14 +73,25 @@ Particle::~Particle(){
 double Particle::get_x() const{
   return x_;
 }
+void Particle::set_x(const double& x){
+  x_ = x;
+}
+void Particle::set_x(const double&& x){
+  x_ = x;
+}
+void Particle::set_X(const double& x){
+  X_ = x;
+}
+void Particle::set_X(const double&& x){
+  X_ = x;
+}
 void Particle::time_evolve(const int& n){
   std::call_once(seed_initializer_,[](){
-  std::srand(std::time(NULL));
-  });
-
+      std::srand(std::time(NULL));
+      });
   for(auto i=0;i<n;++i){
     double dx = static_cast<double>(std::rand())/RAND_MAX - 0.5;
-    update(dx);
+    move(dx);
     save();
   }
 }
@@ -71,5 +106,17 @@ void Particle::save(){
     }
   }
   file_ << x_ << std::endl;
+}
+void Particle::set_len(const double x) {
+  len_ = x;
+}
+void Particle::set_system_len(const double x) {
+  system_len_ = x;
+}
+double Particle::get_system_len() const{
+  return system_len_;
+}
+double Particle::get_len() const{
+  return len_;
 }
 #endif

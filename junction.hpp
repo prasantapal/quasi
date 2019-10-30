@@ -13,6 +13,7 @@ class Junction{
     Junction(const double& x);
     Junction( double&& x);
     ~Junction();
+
     int get_counter() const;
     void set_label(const int label);
 
