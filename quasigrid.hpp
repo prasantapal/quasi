@@ -1,3 +1,5 @@
+#ifndef QUASI_GRID_HPP
+#define QUASI_GRID_HPP
 #include "particle.hpp"
 #include "intersection.hpp"
 #include <list>
@@ -26,7 +28,7 @@ int mod_num_particles(const int& n);
     inline double get_random()   { return  normal_dist_(particle_motion_generator_); }
     inline double get_random_particle()   { return  particle_selection_dist_(particle_selection_generator_); }
     void set_particle_selection_distribution();
-    double calculate_critical_density() const;
+    double calculate_critical_density_c() const;
     void set_num_particles( const int n);
     int get_num_particles() const ;
     void set_num_intersections( const int n);
@@ -44,7 +46,8 @@ int mod_num_particles(const int& n);
     std::mt19937 particle_selection_generator_{particle_selection_()};
     std::uniform_int_distribution<> particle_selection_dist_{1, 6};
     double density_;
-    double critical_density_;
+    double critical_density_c_;
+    double critical_density_g_;
     int num_intersections_;
     int num_particles_;
     double particle_length_;
@@ -77,7 +80,7 @@ void QuasiGrid::quasigrid_helper(){
   }
   */
 }
-double QuasiGrid::calculate_critical_density() const{
+double QuasiGrid::calculate_critical_density_c() const{
   double density = {0};
   switch (num_intersections_){
     case 1:
@@ -155,3 +158,4 @@ if(direction == Direction::Forward) {
 
   return mod_num_particles(n-1);
 }
+#endif

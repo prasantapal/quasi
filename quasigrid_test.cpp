@@ -13,7 +13,7 @@ int main(int argc, char** argv){
 
  std::cout << q.get_num_particles() << std::endl;
 q.set_particle_selection_distribution();
- std::cout << "critical density:" << q.calculate_critical_density() << std::endl;
+ std::cout << "critical density:" << q.calculate_critical_density_c() << std::endl;
 for(auto i=0;i<n;i++)
  std::cout << q.get_random_particle() << std::endl;
 
