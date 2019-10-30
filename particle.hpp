@@ -29,8 +29,8 @@ class Particle{
     void set_len(const double x) ;
     void set_system_len(const double x) ;
     inline bool does_belong_to(const double& x) {
-      auto lower_boundary_ =  x - len_;
-      auto upper_boundary_ =  x + len_;
+      auto lower_boundary_ =  x - len_half_;
+      auto upper_boundary_ =  x + len_half_;
       return (x>= lower_boundary_ && x <= upper_boundary_);
     }
     inline  void move(const double& dx) {x_ += dx; X_ += dx;}
@@ -47,9 +47,11 @@ class Particle{
     static std::ofstream file_;
     static std::once_flag seed_initializer_;
     static double len_;
+    static double len_half_;
     static double system_len_;
 };
 double Particle::len_ = {0};
+double Particle::len_half_ = {0};
 double Particle::system_len_ = {0};
 unsigned Particle::counter_ = {0};
 std::once_flag Particle::seed_initializer_;
@@ -109,6 +111,7 @@ void Particle::save(){
 }
 void Particle::set_len(const double x) {
   len_ = x;
+  len_half_ = len_/2.0;
 }
 void Particle::set_system_len(const double x) {
   system_len_ = x;
