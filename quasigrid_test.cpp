@@ -6,7 +6,7 @@ int main(int argc, char** argv){
  // for(auto i:std::vector<bool>(n,false)){
  //   std::cout << q.get_random() << std::endl;
  // }
- auto n= 1;
+ auto n= 3;
  auto j=3;
  q.set_num_particles(n);
  q.set_num_intersections(j);
@@ -18,8 +18,8 @@ for(auto i=0;i<n;i++)
  std::cout << q.get_random_particle() << std::endl;
 
 q.initialize_system();
-
-
+int k =1;
+std::cout << n << " "<< " neighbor of  " << k << " " << q.get_neighbor_particle(k,QuasiGrid::Direction::Forward) << std::endl;
 
 return 0;
 }

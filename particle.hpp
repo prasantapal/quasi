@@ -3,6 +3,7 @@
 #include<iostream>
 #include<fstream>
 #include <thread>
+#include <cmath>
 #include <mutex>
 #include <string>
 class Particle{
@@ -28,10 +29,17 @@ class Particle{
     void set_X(const double&& x);
     void set_len(const double x) ;
     void set_system_len(const double x) ;
-    inline bool does_belong_to(const double& x) {
-      auto lower_boundary_ =  x - len_half_;
-      auto upper_boundary_ =  x + len_half_;
-      return (x>= lower_boundary_ && x <= upper_boundary_);
+/****** THIS IS  A VERY IMPORTANT FUNCTION ****************/
+    inline bool does_belong_to(const double& x) {//Check whether or not a point below to the particle geometrical boundaries
+      auto lower_boundary_ =  mod_len(x_ - len_half_);
+      auto upper_boundary_ =  mod_len(x_ + len_half_);
+      std::cout << x << " " << len_ << " " << lower_boundary_ << " " << upper_boundary_ << std::endl;
+      if(lower_boundary_ > upper_boundary_) { ///This is a special case
+
+        return (mod_len(x)>= lower_boundary_ || mod_len(x)<= upper_boundary_);
+      }
+
+      return (mod_len(x)>= lower_boundary_ && mod_len(x) <= upper_boundary_);
     }
     inline  void move(const double& dx) {x_ += dx; X_ += dx;}
     inline  void move(const double&& dx) {x_ += dx; X_ += dx;}

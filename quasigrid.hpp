@@ -14,10 +14,14 @@
 ///Junction is the unit of intersection
 class QuasiGrid{
   public:
+    enum Direction {Forward,Backward};
     QuasiGrid();
     ~QuasiGrid();
     void distribute_junction_labels();
     void reassign_intersection_labels();
+    int get_neighbor_particle(const int& n,const int direction);
+
+int mod_num_particles(const int& n);
 
     inline double get_random()   { return  normal_dist_(particle_motion_generator_); }
     inline double get_random_particle()   { return  particle_selection_dist_(particle_selection_generator_); }
@@ -135,4 +139,19 @@ void QuasiGrid::depopulate_blocked_intersection(const int n){
 }
 void QuasiGrid::reassign_intersection_labels() {//Use it optionally if the intersection labels need reassignments
 
+}
+
+int QuasiGrid::mod_num_particles(const int& n){
+if(n>=0){
+  return n%num_particles_;
+}
+return num_particles_ - ((-n)%num_particles_);
+
+}
+int QuasiGrid::get_neighbor_particle(const int& n,const int direction){///zero is backward, 1 is forward
+if(direction == Direction::Forward) {
+  return mod_num_particles(n+1);
+}
+
+  return mod_num_particles(n-1);
 }

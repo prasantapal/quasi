@@ -26,7 +26,14 @@ std::cout << std::fmod(value , val) << std::endl;
 
   Particle p;
 p.set_system_len(2.0*M_PI);
+p.set_len(0.1);
+
   auto x = 6.0*M_PI + 0.28;
+ x = -0.0500;
+
+std::cout << p.does_belong_to(x) << std::endl;
+
+return 0;
   std::cout << p.mod_len(x) << std::endl;
 
 

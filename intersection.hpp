@@ -9,7 +9,7 @@ class Intersection{
     int get_counter() const;
     void initialize();
     int get_label() const;
-    int print_junction_labels() const ;
+    void print_junction_labels() const ;
     void allocate_labels(const int pos,const int label) ;
   private:
     void ctor_helper();
@@ -54,7 +54,7 @@ void Intersection::initialize() {
 int Intersection::get_label() const {
   return id_;
 }
-int Intersection::print_junction_labels() const {
+void Intersection::print_junction_labels() const {
   for(auto it:intersection_) {
     std::cout << it.get_label() << " ";
   }
