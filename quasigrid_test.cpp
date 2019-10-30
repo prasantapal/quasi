@@ -6,8 +6,8 @@ int main(int argc, char** argv){
  // for(auto i:std::vector<bool>(n,false)){
  //   std::cout << q.get_random() << std::endl;
  // }
- auto n= 9;
- auto j=1;
+ auto n= 1;
+ auto j=3;
  q.set_num_particles(n);
  q.set_num_intersections(j);
 
@@ -16,6 +16,8 @@ q.set_particle_selection_distribution();
  std::cout << "critical density:" << q.calculate_critical_density() << std::endl;
 for(auto i=0;i<n;i++)
  std::cout << q.get_random_particle() << std::endl;
+
+q.initialize_system();
 
 
 

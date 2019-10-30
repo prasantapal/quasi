@@ -13,6 +13,10 @@ class Junction{
     Junction(const double& x);
     Junction( double&& x);
     ~Junction();
+    int get_counter() const;
+    void set_label(const int label);
+
+int get_label() const;
     inline bool does_belong_to(const double& x) { return (x>= lower_boundary_ && x <= upper_boundary_); }
     void set_x(const double  x);
     void set_len(const double  len);
@@ -121,5 +125,15 @@ void Junction::set_occupation(const short pos){
 
   }
     }
+int Junction::get_counter() const{
+return counter_;
+}
 
+void Junction::set_label(const int label){
+  id_ = label;
+}
+
+int Junction::get_label() const{
+return id_;
+}
 #endif
