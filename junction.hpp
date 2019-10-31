@@ -13,7 +13,7 @@ class Junction{
     Junction(const double& x);
     Junction( double&& x);
     ~Junction();
-
+   bool get_is_blocked() const;
     int get_counter() const;
     void set_label(const int label);
 
@@ -28,19 +28,19 @@ int get_label() const;
     bool is_occupied() const;
     void set_occupation(const short pos);
     void reset_occupation(const short pos);
-
+   void set_is_blocked(const bool is_blocked);
   private:
     void set_len_dependency();
     void ctor_helper();
     double x_;
-
     unsigned id_;
     double len_;
     double len_half_;
     double lower_boundary_;
     double upper_boundary_;
     int state_;
-    std::vector<bool> occupation_list_status_; ///Store the list of ids occupying the junction
+    std::vector<bool> occupation_list_status_ = {false,false}; ///Store the list of ids occupying the junction
+    bool is_blocked_= {false};
     static unsigned  counter_;
     static int max_occupation_;
 };
@@ -136,5 +136,13 @@ void Junction::set_label(const int label){
 
 int Junction::get_label() const{
 return id_;
+}
+
+   void Junction::set_is_blocked(const bool is_blocked){
+  is_blocked_ = is_blocked;
+   }
+
+bool Junction::get_is_blocked() const {
+return is_blocked_;
 }
 #endif

@@ -11,6 +11,7 @@ class Intersection{
     int get_label() const;
     void print_junction_labels() const ;
     void allocate_labels(const int pos,const int label) ;
+    std::vector<Junction>& get_intersection_ref() ;
   private:
     void ctor_helper();
     std::vector<Junction> intersection_;
@@ -60,3 +61,9 @@ void Intersection::print_junction_labels() const {
   }
   std::cout << std::endl;
 }
+
+
+    std::vector<Junction>& Intersection::get_intersection_ref() {
+   return intersection_;
+    }
+

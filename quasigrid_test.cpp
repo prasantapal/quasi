@@ -10,6 +10,11 @@ int main(int argc, char** argv){
  auto j=3;
  q.set_num_particles(n);
  q.set_num_intersections(j);
+q.initialize_system();
+
+ q.set_system_len(2.0*M_PI);
+ auto len = 0.1;
+ q.set_len(len);
 
  std::cout << q.get_num_particles() << std::endl;
 q.set_particle_selection_distribution();
@@ -20,6 +25,6 @@ for(auto i=0;i<n;i++)
 q.initialize_system();
 int k =1;
 std::cout << n << " "<< " neighbor of  " << k << " " << q.get_neighbor_particle(k,QuasiGrid::Direction::Forward) << std::endl;
-
+q.move_particle(n-1,0.01);
 return 0;
 }

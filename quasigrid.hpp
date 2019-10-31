@@ -19,12 +19,21 @@ class QuasiGrid{
     enum Direction {Forward,Backward};
     QuasiGrid();
     ~QuasiGrid();
+    void set_len(const double& len);
+    void set_system_len(const double& len);
+
+    inline double mod_len(const double x) {
+      if(x>=0)
+        return std::fmod(x,system_len_);
+      return (system_len_ - std::fmod(std::fabs(x),system_len_));
+
+    }
+    void move_particle(const int& n,const double& dx);
+
     void distribute_junction_labels();
     void reassign_intersection_labels();
     int get_neighbor_particle(const int& n,const int direction);
-
-int mod_num_particles(const int& n);
-
+    int mod_num_particles(const int& n);
     inline double get_random()   { return  normal_dist_(particle_motion_generator_); }
     inline double get_random_particle()   { return  particle_selection_dist_(particle_selection_generator_); }
     void set_particle_selection_distribution();
@@ -50,7 +59,8 @@ int mod_num_particles(const int& n);
     double critical_density_g_;
     int num_intersections_;
     int num_particles_;
-    double particle_length_;
+    double len_;
+    double system_len_;;
     std::vector<Particle> particles_;
     std::vector<Intersection> intersections_;
     std::list<int> blocked_intersections_; ///This contains the labels for blocked intersections
@@ -59,7 +69,6 @@ std::string QuasiGrid::class_name_ = {""};
 QuasiGrid::QuasiGrid(){
   quasigrid_helper();
   std::cerr << class_name_ << " ctor" << std::endl;
-  initialize_system();
 }
 QuasiGrid::~QuasiGrid(){
   std::cerr << class_name_<< " dtor" << std::endl;
@@ -109,7 +118,6 @@ void QuasiGrid::set_particle_selection_distribution(){
   std::cout << "setting particle selection dist" << std::endl;
   particle_selection_dist_ = std::uniform_int_distribution<> (0, num_particles_);
 }
-
 /**
  * distribute junction labels to each intersections
  */
@@ -119,7 +127,6 @@ void QuasiGrid::distribute_junction_labels(){
     std::cout << "counter:" << it->get_counter() << " label " << it->get_label() << " ";
     it->allocate_labels(0,it->get_label());
     it->allocate_labels(1,2*intersections_.size() -1 -it->get_label());
-
   }
   std::cout << std::endl;
   std::cout << "printing junction labels:" << std::endl;
@@ -127,7 +134,6 @@ void QuasiGrid::distribute_junction_labels(){
     std::cout << "intersection: " << it.get_label() << std::endl;
     it.print_junction_labels();
   }
-
 }
 void QuasiGrid::initialize_system() {
   particles_ = std::vector<Particle>(num_particles_);
@@ -141,21 +147,55 @@ void QuasiGrid::depopulate_blocked_intersection(const int n){
   blocked_intersections_.remove(n);
 }
 void QuasiGrid::reassign_intersection_labels() {//Use it optionally if the intersection labels need reassignments
-
 }
-
 int QuasiGrid::mod_num_particles(const int& n){
-if(n>=0){
-  return n%num_particles_;
-}
-return num_particles_ - ((-n)%num_particles_);
-
+  if(n>=0){
+    return n%num_particles_;
+  }
+  return num_particles_ - ((-n)%num_particles_);
 }
 int QuasiGrid::get_neighbor_particle(const int& n,const int direction){///zero is backward, 1 is forward
-if(direction == Direction::Forward) {
-  return mod_num_particles(n+1);
-}
-
+  if(direction == Direction::Forward) {
+    return mod_num_particles(n+1);
+  }
   return mod_num_particles(n-1);
 }
+
+///Check if there is a blocked junction before or after the next particle
+
+void QuasiGrid::move_particle(const int& n,const double& dx){
+  auto x = particles_[n].get_x();
+  if(dx>0){
+    auto neighbor_particle  = mod_num_particles(n+1);
+    if(!particles_[neighbor_particle].does_belong_to(x + dx)){///Particle constraint is cleared now the junction constraint
+      bool is_blocked_by_junction = {false};
+      for(auto it:intersections_){
+        auto& intersection_ref = it.get_intersection_ref();
+        for(auto its:intersection_ref){
+          std::cout << "blocking status " << its.get_is_blocked() << std::endl;
+        }
+
+      }
+
+    }else {///Well do nothing
+    }
+  }else {
+    auto neighbor_particle  = mod_num_particles(n-1);
+    if(!particles_[neighbor_particle].does_belong_to(x - dx)){///Particle constraint is cleared now the junction constraint
+    }else {///Well do nothing
+    }
+
+
+  }
+}
+
+void QuasiGrid::set_len(const double& len){
+  len_ = len;
+
+}
+void QuasiGrid::set_system_len(const double& len){
+  system_len_ = len;
+
+}
+
 #endif
