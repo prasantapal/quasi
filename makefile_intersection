@@ -1,5 +1,5 @@
 PROJECT=intersection_test
-CC=g++
+CC=g++-9
 CC+=-std=c++17
 CFLAGS=-g3
 CFLAGS+=-Wall

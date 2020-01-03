@@ -9,16 +9,18 @@ class Intersection{
     int get_counter() const;
     void initialize();
     int get_label() const;
-    void print_junction_labels() const ;
+     void print_intersection_labels()  ;
     void allocate_labels(const int pos,const int label) ;
-    std::vector<Junction>& get_intersection_ref() ;
+    auto get_intersection_ptr() const;
   private:
     void ctor_helper();
-    std::vector<Junction> intersection_;
+     std::vector<Junction> intersection_;
     unsigned id_;
     static unsigned counter_;
     static unsigned num_junctions_per_intersection_;
 };
+
+//std::vector<Junction> Intersection::intersection_;
 //In case of 3D it will be 3
 //          -----
 //         |     |
@@ -29,6 +31,7 @@ unsigned Intersection::num_junctions_per_intersection_ = {2};
 unsigned Intersection::counter_ = {0};
 void Intersection::allocate_labels(const int pos,const int label) {
   if(pos >=0 && pos < num_junctions_per_intersection_){
+    std::cerr << "intersection " << this->get_label() << " settting label " << label  << " to position " << pos << std::endl;
     intersection_[pos].set_label(label);
   }else {
     std::cerr << "position " << pos  << " is not acceptable" << std::endl;
@@ -55,15 +58,20 @@ void Intersection::initialize() {
 int Intersection::get_label() const {
   return id_;
 }
-void Intersection::print_junction_labels() const {
-  for(auto it:intersection_) {
+
+void Intersection::print_intersection_labels()   {
+  for(auto& it:intersection_) {
     std::cout << it.get_label() << " ";
   }
   std::cout << std::endl;
 }
 
 
-    std::vector<Junction>& Intersection::get_intersection_ref() {
-   return intersection_;
-    }
-
+auto Intersection::get_intersection_ptr() const {
+  return &intersection_;
+}
+#ifdef MAKE_TEST
+int main(int argc, char** argv){
+  return 0;
+}
+#endif

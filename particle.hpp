@@ -45,6 +45,7 @@ class Particle{
     inline  void move(const double&& dx) {x_ += dx; X_ += dx;}
     void set_filename(std::string& filename);
     void time_evolve(const int& n);
+    void print() const;
   private:
     void  ctor_helper();
     double x_ = {0};
@@ -129,5 +130,9 @@ double Particle::get_system_len() const{
 }
 double Particle::get_len() const{
   return len_;
+}
+
+void Particle::print() const{
+  std::cout << "id:" << id_ << " x:" << x_ << " " << " len:" << len_<< std::endl;
 }
 #endif
