@@ -9,12 +9,15 @@ class Intersection{
     int get_counter() const;
     void initialize();
     int get_label() const;
-     void print_intersection_labels()  ;
+      void print_intersection_labels() const ;
+    void print_intersection_coordinates()  const;
     void allocate_labels(const int pos,const int label) ;
     auto get_intersection_ptr() const;
+    static int get_junction_count() ;
   private:
     void ctor_helper();
-     std::vector<Junction> intersection_;
+
+    std::vector<Junction> intersection_;
     unsigned id_;
     static unsigned counter_;
     static unsigned num_junctions_per_intersection_;
@@ -59,7 +62,15 @@ int Intersection::get_label() const {
   return id_;
 }
 
-void Intersection::print_intersection_labels()   {
+void Intersection::print_intersection_coordinates()   const{
+  for(auto& it:intersection_) {
+    std::cout << it.get_x() << " ";
+  }
+  std::cout << std::endl;
+}
+
+
+void Intersection::print_intersection_labels()   const{
   for(auto& it:intersection_) {
     std::cout << it.get_label() << " ";
   }
@@ -70,6 +81,10 @@ void Intersection::print_intersection_labels()   {
 auto Intersection::get_intersection_ptr() const {
   return &intersection_;
 }
+int Intersection::get_junction_count(){
+  return num_junctions_per_intersection_;
+}
+
 #ifdef MAKE_TEST
 int main(int argc, char** argv){
   return 0;
