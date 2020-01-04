@@ -143,9 +143,8 @@ double Junction::get_len() const { return len_; };
  *
  */
 void Junction::set_len_dependency(){
-  len_half_ = len_/2.0;
-  lower_boundary_ = x_ - len_half_;
-  upper_boundary_ = x_ + len_half_;
+  lower_boundary_ = x_ - len_;
+  upper_boundary_ = x_ + len_;
 }
 /**
  * set the occupation status of the junction
@@ -219,6 +218,8 @@ int Junction::get_junction_count() {
 }
 void Junction::set_length_fixed_size(const double& l){
 }
+
+
 #ifdef MAKE_TEST
 int main(int argc, char** argv){
   return 0;

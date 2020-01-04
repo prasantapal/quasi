@@ -33,19 +33,22 @@ int main(int argc, char** argv){
   q.print_intersection_labels();
   q.print_junction_labels();
   q.set_junction_coordinates();
-  auto inters = q.get_intersection(1);
+  auto& inters = q.get_intersection(1);
   inters.print_intersection_coordinates();
   q.print_junction_coordinates();
   auto len = 0.1;
+  auto eps = -0.00000001;
   q.set_len(len);
   ///all keyword means there is a uniformity
 q.set_all_intersection_length();
 q.print_all_intersection_length();
-
+auto intersection_ptr = inters.get_intersection_ptr();
+auto& jn = q.get_junction(1);
+std::cout << "jn location:" << jn.get_x() << std::endl;
 
   std::cout << q.get_num_particles() << std::endl;
   q.set_particle_selection_distribution();
-  auto  x=0.7854;
+  auto  x = jn.get_x() - len - eps;
   auto val = q.does_belong_to_junction(x);
   if(val == nullptr){
     std::cout << x << " does not belongs to junction " << std::endl;

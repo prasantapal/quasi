@@ -59,7 +59,8 @@ class QuasiGrid{
     void initialize_system();
     void populate_blocked_intersection(const int n);
     void depopulate_blocked_intersection(const int n);
-    Intersection get_intersection(const int index);
+    Intersection& get_intersection(const int index);
+    Junction& get_junction(const int index);
     static double get_arm_length() ;
   private:
     void quasigrid_helper();
@@ -288,7 +289,11 @@ void QuasiGrid::set_junction_coordinates(){
   std::cout << std::endl;
   std::cout << std::endl;
 }
-Intersection QuasiGrid::get_intersection(const int n){
+Junction& QuasiGrid::get_junction(const int n){
+    return *junctions_.at(n-1);
+}
+
+Intersection& QuasiGrid::get_intersection(const int n){
   if(n<=intersections_.size() && n>=1)
     return intersections_.at(n-1);
   else{

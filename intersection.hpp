@@ -6,6 +6,7 @@ class Intersection{
   public:
     Intersection();
     ~Intersection();
+
     int get_counter() const;
     void initialize();
     int get_label() const;
@@ -84,6 +85,7 @@ auto Intersection::get_intersection_ptr() const {
 int Intersection::get_junction_count(){
   return num_junctions_per_intersection_;
 }
+
 
 #ifdef MAKE_TEST
 int main(int argc, char** argv){
