@@ -45,6 +45,7 @@ class Junction{
     Junction(const double& x);
     Junction( double&& x);
     ~Junction();
+    static void set_length_fixed_size(const double&);
     bool operator <(const Junction & junction) const
     {
       return x_ < junction.get_x();
@@ -84,7 +85,10 @@ class Junction{
     bool is_active_ = {true}; //whether or not the junction is is_active_ive
     static unsigned  counter_;
     static int max_occupation_;
+    static double len_fixed_size_;///This is the length when the junction is of fixed size
 };
+double Junction::len_fixed_size_ = {0.0};
+
 ///**
 // *return whether or not the junction is occupied
 // */
@@ -213,4 +217,12 @@ void Junction::print_occupation() const{
 int Junction::get_junction_count() {
   return counter_;
 }
+void Junction::set_length_fixed_size(const double& l){
+}
+#ifdef MAKE_TEST
+int main(int argc, char** argv){
+  return 0;
+}
+#endif
+
 #endif

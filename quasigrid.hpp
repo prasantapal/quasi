@@ -28,6 +28,8 @@ class QuasiGrid{
     QuasiGrid& operator=(QuasiGrid&& ) = delete;
     ~QuasiGrid();
     void set_arm_length();
+    void set_all_intersection_length();
+    void print_all_intersection_length();
     void print_intersection_labels();
     void print_junction_labels();
     void print_junction_coordinates();
@@ -252,39 +254,53 @@ Junction* QuasiGrid::does_belong_to_junction(const double& x){
   }
   return nullptr;
 }
+void QuasiGrid::print_all_intersection_length(){
+  std::cerr << "printing all intersection length:" << std::endl;
+  for(auto& it:intersections_){
+    auto& ref = *it.get_intersection_ptr();
+    std::cout << "intersection " << it.get_label() << ": ";
+    for(auto& its:ref){
+      std::cout << its.get_len() << " ";
+    }
+    std::cout << std::endl;
+  }
+}
+void QuasiGrid::set_all_intersection_length(){
+  std::cerr << "setting all junction length" << std::endl;
+  for(auto& it:junctions_){
+    it->set_len(this->len_);
+  }
+}
 void QuasiGrid::set_junction_coordinates(){
   std::cerr << "setting junction coordinates:" << std::endl;
   std::vector<double> junction_coordinates(Intersection::get_junction_count());
   for(auto& it:junctions_){
-      auto label = it->get_label();
-      std::cout << "label:"<< label << " ";
-      double x = {0.0};
-      if(label < intersections_.size()) {
-         x = (label + 1)*arm_length_;
-      }else {
-        x = (default_arm_offset_ + label )*arm_length_;
-      }
-        it->set_x(x);
+    auto label = it->get_label();
+    std::cout << "label:"<< label << " ";
+    double x = {0.0};
+    if(label < intersections_.size()) {
+      x = (label + 1)*arm_length_;
+    }else {
+      x = (default_arm_offset_ + label )*arm_length_;
     }
-    std::cout << std::endl;
+    it->set_x(x);
+  }
+  std::cout << std::endl;
   std::cout << std::endl;
 }
 Intersection QuasiGrid::get_intersection(const int n){
   if(n<=intersections_.size() && n>=1)
-  return intersections_.at(n-1);
+    return intersections_.at(n-1);
   else{
     std::cerr << "index " << n << " out of range " << std::endl;
     throw "index out of range";
   }
-
-
 }
-
 void QuasiGrid::set_arm_length() {
-arm_length_ = system_len_ / (2.0*(num_intersections_ + 1));
-std::cerr << "arm_length:" << arm_length_ << std::endl;
+  arm_length_ = system_len_ / (2.0*(num_intersections_ + 1));
+  std::cerr << "arm_length:" << arm_length_ << std::endl;
 }
 double QuasiGrid::get_arm_length(){
-return arm_length_;
+  return arm_length_;
 }
 #endif
