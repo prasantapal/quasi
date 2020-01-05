@@ -34,6 +34,7 @@
  *
  */
 #include <list>
+#include <algorithm> //find_if
 #include <iostream>
 #include <string>
 #include <vector>
@@ -63,8 +64,8 @@ class Junction{
     double get_x() const;
     unsigned get_id() const;
     double get_len() const;
-    void occupy(Particle*,bool is_forward = true);///occupy a junction
-    void unoccupy(bool is_forward = true);///occupy a junction
+    void occupy(Particle*,bool is_forward = true);///occupy a junction either with a forward of backward movement
+    void unoccupy(bool is_forward = true);///occupy a junction either with forward or backward movement
     void print_occupation() const;
     bool is_occupied() const;
     void set_occupation(const short pos);
@@ -211,10 +212,12 @@ void Junction::unoccupy(bool is_forward ){
  *
  */
 void Junction::print_occupation() const{
+  std::cerr << "printing occupation of junction " << this->get_label() << std::endl;
   for(const auto& it:occupations_){
     it->print();
   }
 }
+
 int Junction::get_junction_count() {
   return counter_;
 }

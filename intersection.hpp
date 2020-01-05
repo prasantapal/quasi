@@ -1,4 +1,5 @@
 #include "junction.hpp"
+#include <map>
 /**
  *Intersection consists of two junctions
  */
@@ -9,21 +10,34 @@ class Intersection{
     int get_counter() const;
     void initialize();
     int get_label() const;
-      void print_intersection_labels() const ;
+    void print_intersection_labels() const ;
     void print_intersection_coordinates()  const;
     void allocate_labels(const int pos,const int label) ;
     auto get_intersection_ptr() const;
     auto& get_intersection_ref() const;
+    void set_junction_conjugate();
     static int get_junction_count() ;
+    bool is_blocked(const int) const;
   private:
     void ctor_helper();
-
     std::vector<Junction> intersection_;
+    std::map<int,int> junction_conjugate_;
     unsigned id_;
     static unsigned counter_;
     static unsigned num_junctions_per_intersection_;
 };
-
+void Intersection::set_junction_conjugate() {
+  for(auto& junction:intersection_){
+    auto label = junction.get_label();
+    std::vector<Junction> other_junctions;
+    std::vector<Junction>::iterator iter = intersection_.begin();
+    while ((iter = std::find_if(iter, intersection_.end(), [=](const auto& val){ return label != val.get_label() ;})) != intersection_.end()) {
+      // Do something with iter
+      junction_conjugate_[label] = iter->get_label();
+      iter++;
+    }
+  }
+}
 //std::vector<Junction> Intersection::intersection_;
 //In case of 3D it will be 3
 //          -----
@@ -62,34 +76,29 @@ void Intersection::initialize() {
 int Intersection::get_label() const {
   return id_;
 }
-
 void Intersection::print_intersection_coordinates()   const{
   for(auto& it:intersection_) {
     std::cout << it.get_x() << " ";
   }
   std::cout << std::endl;
 }
-
-
 void Intersection::print_intersection_labels()   const{
   for(auto& it:intersection_) {
     std::cout << it.get_label() << " ";
   }
   std::cout << std::endl;
 }
-
-
 auto Intersection::get_intersection_ptr() const {
   return &intersection_;
 }
 int Intersection::get_junction_count(){
   return num_junctions_per_intersection_;
 }
-
 auto& Intersection::get_intersection_ref() const {
   return intersection_;
 }
-
+bool Intersection::is_blocked(const int) const{
+}
 #ifdef MAKE_TEST
 int main(int argc, char** argv){
   return 0;

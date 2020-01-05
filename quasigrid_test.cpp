@@ -1,6 +1,20 @@
 #include "quasigrid.hpp"
+#define TEST_REFERENCE_WRAPPER
+#undef TEST_REFERENCE_WRAPPER
 int main(int argc, char** argv){
-  /*
+#ifdef TEST_REFERENCE_WRAPPER
+
+  std::string hello = "Hello, ";
+  std::string world = "everyone!";
+  typedef std::vector<std::reference_wrapper<std::string>> vec_t;
+  vec_t vec = {hello, world};
+  std::string& hello_clone = hello;
+  vec.push_back(hello_clone);
+  vec.at(1).get() = "world!";
+  std::cout << hello << world << std::endl;
+  std::copy(vec.begin(),vec.end(),std::ostream_iterator<std::string>(std::cout," "));
+#endif
+
      Junction J;
      Particle p;
      Particle p2;
@@ -20,7 +34,8 @@ int main(int argc, char** argv){
      std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
      J.unoccupy();
      std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
-     */
+     return 0;
+
   auto n = 3;
   auto j = 2;
   QuasiGrid q;
@@ -33,18 +48,18 @@ int main(int argc, char** argv){
   q.print_intersection_labels();
   q.print_junction_labels();
   q.set_junction_coordinates();
-  auto& inters = q.get_intersection(1);
-  inters.print_intersection_coordinates();
+  auto& intersections= q.get_intersection(1);
+  intersections.print_intersection_coordinates();
   q.print_junction_coordinates();
   auto len = 0.1;
   auto eps = -0.00000001;
   q.set_len(len);
   ///all keyword means there is a uniformity
-q.set_all_intersection_length();
-q.print_all_intersection_length();
-auto intersection_ptr = inters.get_intersection_ptr();
-auto& jn = q.get_junction(1);
-std::cout << "jn location:" << jn.get_x() << std::endl;
+  q.set_all_intersection_length();
+  q.print_all_intersection_length();
+  auto intersection_ptr = intersections.get_intersection_ptr();
+  auto& jn = q.get_junction(1);
+  std::cout << "jn location:" << jn.get_x() << std::endl;
 
   std::cout << q.get_num_particles() << std::endl;
   q.set_particle_selection_distribution();
