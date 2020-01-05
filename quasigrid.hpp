@@ -13,6 +13,7 @@
 #include <map>
 #include <random>
 #include <cmath>
+using  JunctionRef = std::reference_wrapper<Junction> ;
 // Outlier(Outlier const& other) = default;
 //    Outlier& operator=(Outlier const& other) = default;
 //    Outlier(Outlier&& other) = default;
@@ -83,6 +84,8 @@ class QuasiGrid{
     std::list<int> blocked_intersections_; ///This contains the labels for blocked intersections
     ///Make a vector tuple based on junction index with the contents being
     std::vector<Junction*> junctions_;
+    std::vector<JunctionRef> junction_refs_;
+
     static double arm_length_;
     static int default_arm_offset_;
 };
@@ -181,15 +184,17 @@ void QuasiGrid::initialize_system() {
   particles_ = std::vector<Particle>(num_particles_);
   intersections_ = std::move(std::vector<Intersection>(num_intersections_));
   distribute_junction_labels();
+
   for(auto& it:intersections_){
-    auto intersection_ptr = it.get_intersection_ptr();
-    auto& intersection_ref = *intersection_ptr;
+    auto& intersection_ref = it.get_intersection_ref();
     for(auto& its:intersection_ref) {
       junctions_.push_back(const_cast<Junction*>(&its));
     }
   }
+
   std::cout << std::endl;
   std::sort(junctions_.begin(),junctions_.end(),[](const auto& a,const auto&b){ return a->get_label()<b->get_label();});
+  std::cerr << "printing junction labels" << std::endl;
   for(auto& jun:junctions_){
     std::cout << jun->get_label() << " ";
   }
@@ -228,7 +233,7 @@ void QuasiGrid::move_particle(const int& n,const double& dx){
     if(!particles_[neighbor_particle].does_belong_to(x + dx)){///Particle constraint is cleared now the junction constraint
       bool is_blocked_by_junction = {false};
       for(auto it:intersections_){
-        auto& intersection_ref = *it.get_intersection_ptr();
+        auto& intersection_ref = it.get_intersection_ref();
         for(auto& its:intersection_ref){
           std::cout << "blocking status " << its.get_is_blocked() << std::endl;
         }
