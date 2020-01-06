@@ -55,7 +55,7 @@ class Junction{
     int get_counter() const;
     void set_label(const int label);
     int get_label() const;
-    inline bool does_belong_to(const double& x) { return (x>= lower_boundary_ && x <= upper_boundary_); }
+    inline bool does_belong_to(const double& x) const { return (x>= lower_boundary_ && x <= upper_boundary_); }
     auto get_ptr() const {return this;};
     auto& get_ref() const { return *this;}
     inline Junction* does_belong_to_junction(const double& x) { return (x>= lower_boundary_ && x <= upper_boundary_)?this:nullptr; } ///return the pointer to the junction if it belongs else return nullptr

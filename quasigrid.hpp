@@ -29,16 +29,16 @@ class QuasiGrid{
     QuasiGrid& operator=(QuasiGrid&& ) = delete;
     ~QuasiGrid();
     void set_arm_length();
-    void set_all_intersection_length();
+    void set_all_intersection_length() const;
     void print_all_intersection_length();
     void print_intersection_labels();
     void print_junction_labels();
     void print_junction_coordinates();
     void set_len(const double& len);
-    void set_junction_coordinates();
+    void set_junction_coordinates() const;
     void set_system_len(const double& len);
     int get_next_junction_index(const double& x);
-    Junction* does_belong_to_junction(const double&);
+    const Junction* does_belong_to_junction(const double&) const;
     inline double mod_len(const double x) {
       if(x>=0)
         return std::fmod(x,system_len_);
@@ -61,7 +61,7 @@ class QuasiGrid{
     void populate_blocked_intersection(const int n);
     void depopulate_blocked_intersection(const int n);
     Intersection& get_intersection(const int index);
-    Junction& get_junction(const int index);
+    const Junction& get_junction(const int index) const;
     static double get_arm_length() ;
   private:
     void quasigrid_helper();
@@ -83,7 +83,7 @@ class QuasiGrid{
     std::vector<Intersection> intersections_;
     std::list<int> blocked_intersections_; ///This contains the labels for blocked intersections
     ///Make a vector tuple based on junction index with the contents being
-    std::vector<Junction*> junctions_;
+    std::vector< Junction const*> junctions_;
     std::vector<JunctionRef> junction_refs_;
 
     static double arm_length_;
@@ -190,7 +190,10 @@ void QuasiGrid::initialize_system() {
     for(auto& its:intersection_ref) {
       junctions_.push_back(const_cast<Junction*>(&its));
     }
+    it.set_junction_conjugate();
+    it.print_conjugate();
   }
+  exit(0);
 
   std::cout << std::endl;
   std::sort(junctions_.begin(),junctions_.end(),[](const auto& a,const auto&b){ return a->get_label()<b->get_label();});
@@ -253,7 +256,7 @@ void QuasiGrid::set_len(const double& len){
 void QuasiGrid::set_system_len(const double& len){
   system_len_ = len;
 }
-Junction* QuasiGrid::does_belong_to_junction(const double& x){
+const Junction* QuasiGrid::does_belong_to_junction(const double& x) const {
   for(auto& it:junctions_){
     if(it->does_belong_to(x))
       return it;
@@ -271,16 +274,16 @@ void QuasiGrid::print_all_intersection_length(){
     std::cout << std::endl;
   }
 }
-void QuasiGrid::set_all_intersection_length(){
+void QuasiGrid::set_all_intersection_length()const {
   std::cerr << "setting all junction length" << std::endl;
-  for(auto& it:junctions_){
-    it->set_len(this->len_);
+  for(const auto& it:junctions_){
+    (const_cast<Junction*>(it))->set_len(this->len_);
   }
 }
-void QuasiGrid::set_junction_coordinates(){
+void QuasiGrid::set_junction_coordinates() const{
   std::cerr << "setting junction coordinates:" << std::endl;
   std::vector<double> junction_coordinates(Intersection::get_junction_count());
-  for(auto& it:junctions_){
+  for(const auto& it:junctions_){
     auto label = it->get_label();
     std::cout << "label:"<< label << " ";
     double x = {0.0};
@@ -289,12 +292,12 @@ void QuasiGrid::set_junction_coordinates(){
     }else {
       x = (default_arm_offset_ + label )*arm_length_;
     }
-    it->set_x(x);
+    (const_cast<Junction*>(it))->set_x(x);
   }
   std::cout << std::endl;
   std::cout << std::endl;
 }
-Junction& QuasiGrid::get_junction(const int n){
+const Junction& QuasiGrid::get_junction(const int n) const{
     return *junctions_.at(n-1);
 }
 

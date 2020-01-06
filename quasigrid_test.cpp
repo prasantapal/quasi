@@ -34,7 +34,6 @@ int main(int argc, char** argv){
      std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
      J.unoccupy();
      std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
-     return 0;
 
   auto n = 3;
   auto j = 2;

@@ -18,6 +18,7 @@ class Intersection{
     void set_junction_conjugate();
     static int get_junction_count() ;
     bool is_blocked(const int) const;
+    void print_conjugate() const;
   private:
     void ctor_helper();
     std::vector<Junction> intersection_;
@@ -98,6 +99,16 @@ auto& Intersection::get_intersection_ref() const {
   return intersection_;
 }
 bool Intersection::is_blocked(const int) const{
+}
+
+void Intersection::print_conjugate() const{
+  std::cout << "printing junction conjugate for intersection " << id_ << std::endl;
+  for(auto& it:junction_conjugate_){
+
+    std::cout << it.first << " " << it.second << std::endl;
+  }
+   std::cout << std::endl;
+
 }
 #ifdef MAKE_TEST
 int main(int argc, char** argv){
