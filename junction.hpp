@@ -135,8 +135,9 @@ Junction::Junction():x_(0){
 Junction::~Junction(){
   std::cerr << __func__ << " dtor" << std::endl;
 }
-void Junction::set_x(const double  x) { x_ = x;};
-double Junction::get_x() const { return x_; };
+
+void Junction::set_x(const double  x) { x_ = x;} ///usual setter of junction location
+double Junction::get_x() const { return x_; } ///usual getter of junction location
 /**
  * \brief set the length of the junction
  */

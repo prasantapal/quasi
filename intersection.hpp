@@ -22,7 +22,7 @@ class Intersection{
   private:
     void ctor_helper();
     std::vector<Junction> intersection_;
-    std::map<int,int> junction_conjugate_;
+    std::multimap<int,int> junction_conjugate_;
     unsigned id_;
     static unsigned counter_;
     static unsigned num_junctions_per_intersection_;
@@ -34,7 +34,8 @@ void Intersection::set_junction_conjugate() {
     std::vector<Junction>::iterator iter = intersection_.begin();
     while ((iter = std::find_if(iter, intersection_.end(), [=](const auto& val){ return label != val.get_label() ;})) != intersection_.end()) {
       // Do something with iter
-      junction_conjugate_[label] = iter->get_label();
+      junction_conjugate_.insert(std::pair<int,int>(label, iter->get_label()));
+      //junction_conjugate_[label] = iter->get_label();
       iter++;
     }
   }
@@ -98,7 +99,8 @@ int Intersection::get_junction_count(){
 auto& Intersection::get_intersection_ref() const {
   return intersection_;
 }
-bool Intersection::is_blocked(const int) const{
+bool Intersection::is_blocked(const int index) const{
+//this->junction_.at(index);
 }
 
 void Intersection::print_conjugate() const{

@@ -283,7 +283,7 @@ void QuasiGrid::set_all_intersection_length()const {
 void QuasiGrid::set_junction_coordinates() const{
   std::cerr << "setting junction coordinates:" << std::endl;
   std::vector<double> junction_coordinates(Intersection::get_junction_count());
-  for(const auto& it:junctions_){
+  for(  auto const& it:junctions_){
     auto label = it->get_label();
     std::cout << "label:"<< label << " ";
     double x = {0.0};
