@@ -28,6 +28,7 @@ class QuasiGrid{
     QuasiGrid& operator=(QuasiGrid const& ) = delete;
     QuasiGrid& operator=(QuasiGrid&& ) = delete;
     ~QuasiGrid();
+    bool is_blocked(const int&) const;///Check whether or not a junction is blocked
     void set_arm_length();
     void set_all_intersection_length() const;
     void print_all_intersection_length();
@@ -97,6 +98,7 @@ void QuasiGrid::populate_junction_conjugates(){
       auto& conjugate_map= intersection.get_junction_conjugate();
       for(const auto& pair:conjugate_map){
         std::cout << pair.first << " " << pair.second << std::endl;
+        junction_conjugates_.emplace(pair);
       }
 
 
@@ -209,8 +211,8 @@ void QuasiGrid::initialize_system() {
     it.print_conjugate();
   }
 
-populate_junction_conjugates();
-  exit(0);
+  populate_junction_conjugates();
+
 
   std::cout << std::endl;
   std::sort(junctions_.begin(),junctions_.end(),[](const auto& a,const auto&b){ return a->get_label()<b->get_label();});
@@ -219,6 +221,15 @@ populate_junction_conjugates();
     std::cout << jun->get_label() << " ";
   }
   std::cout << std::endl;
+
+  std::cout << "checking is blocked" << std::endl;
+for(auto& it:junctions_){
+  this->is_blocked(it->get_label());
+}
+
+exit(0);
+
+
 }
 void QuasiGrid::populate_blocked_intersection(const int n){
   blocked_intersections_.push_back(n);
@@ -315,7 +326,7 @@ void QuasiGrid::set_junction_coordinates() const{
   std::cout << std::endl;
 }
 const Junction& QuasiGrid::get_junction(const int n) const{
-    return *junctions_.at(n-1);
+  return *junctions_.at(n-1);
 }
 
 Intersection& QuasiGrid::get_intersection(const int n){
@@ -332,5 +343,21 @@ void QuasiGrid::set_arm_length() {
 }
 double QuasiGrid::get_arm_length(){
   return arm_length_;
+}
+typedef std::multimap<int, int>::iterator MMAPIterator;
+bool QuasiGrid::is_blocked(const int& index) const{
+  std::cout << "index:" << index  << std::endl;
+
+auto matches  = junction_conjugates_.equal_range(index);
+
+// Iterate over the range
+	for (auto it = matches.first; it != matches.second; it++){
+		std::cout << it->second << std::endl;
+                if((junctions_.at(it->second))->is_occupied()){
+                 return true;
+
+                }
+        }
+return false;
 }
 #endif

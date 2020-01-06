@@ -36,7 +36,7 @@ int main(int argc, char** argv){
      std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
 
   auto n = 3;
-  auto j = 2;
+  auto j = 3;
   QuasiGrid q;
   q.set_num_particles(n);
   q.set_num_intersections(j);
