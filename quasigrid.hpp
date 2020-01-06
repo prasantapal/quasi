@@ -91,21 +91,16 @@ class QuasiGrid{
     static double arm_length_;
     static int default_arm_offset_;
 };
-
 void QuasiGrid::populate_junction_conjugates(){
   for(const auto& intersection:intersections_){
     auto& intersection_ref = intersection.get_intersection_ref();
-      auto& conjugate_map= intersection.get_junction_conjugate();
-      for(const auto& pair:conjugate_map){
-        std::cout << pair.first << " " << pair.second << std::endl;
-        junction_conjugates_.emplace(pair);
-      }
-
-
+    auto& conjugate_map= intersection.get_junction_conjugate();
+    for(const auto& pair:conjugate_map){
+      std::cout << pair.first << " " << pair.second << std::endl;
+      junction_conjugates_.emplace(pair);
+    }
   }
-
 }
-
 double QuasiGrid::arm_length_ = {0.0};
 int QuasiGrid::default_arm_offset_ = {2};
 std::string QuasiGrid::class_name_ = {""};
@@ -201,7 +196,6 @@ void QuasiGrid::initialize_system() {
   particles_ = std::vector<Particle>(num_particles_);
   intersections_ = std::move(std::vector<Intersection>(num_intersections_));
   distribute_junction_labels();
-
   for(auto& it:intersections_){
     auto& intersection_ref = it.get_intersection_ref();
     for(auto& its:intersection_ref) {
@@ -210,10 +204,7 @@ void QuasiGrid::initialize_system() {
     it.set_junction_conjugate();
     it.print_conjugate();
   }
-
   populate_junction_conjugates();
-
-
   std::cout << std::endl;
   std::sort(junctions_.begin(),junctions_.end(),[](const auto& a,const auto&b){ return a->get_label()<b->get_label();});
   std::cerr << "printing junction labels" << std::endl;
@@ -221,15 +212,11 @@ void QuasiGrid::initialize_system() {
     std::cout << jun->get_label() << " ";
   }
   std::cout << std::endl;
-
   std::cout << "checking is blocked" << std::endl;
-for(auto& it:junctions_){
-  this->is_blocked(it->get_label());
-}
-
-exit(0);
-
-
+  for(auto& it:junctions_){
+    this->is_blocked(it->get_label());
+  }
+  exit(0);
 }
 void QuasiGrid::populate_blocked_intersection(const int n){
   blocked_intersections_.push_back(n);
@@ -328,7 +315,6 @@ void QuasiGrid::set_junction_coordinates() const{
 const Junction& QuasiGrid::get_junction(const int n) const{
   return *junctions_.at(n-1);
 }
-
 Intersection& QuasiGrid::get_intersection(const int n){
   if(n<=intersections_.size() && n>=1)
     return intersections_.at(n-1);
@@ -347,17 +333,14 @@ double QuasiGrid::get_arm_length(){
 typedef std::multimap<int, int>::iterator MMAPIterator;
 bool QuasiGrid::is_blocked(const int& index) const{
   std::cout << "index:" << index  << std::endl;
-
-auto matches  = junction_conjugates_.equal_range(index);
-
-// Iterate over the range
-	for (auto it = matches.first; it != matches.second; it++){
-		std::cout << it->second << std::endl;
-                if((junctions_.at(it->second))->is_occupied()){
-                 return true;
-
-                }
-        }
-return false;
+  auto matches  = junction_conjugates_.equal_range(index);
+  // Iterate over the range
+  for (auto it = matches.first; it != matches.second; it++){
+    std::cout << it->second << std::endl;
+    if((junctions_.at(it->second))->is_occupied()){
+      return true;
+    }
+  }
+  return false;
 }
 #endif
