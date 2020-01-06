@@ -62,7 +62,8 @@ class QuasiGrid{
     void depopulate_blocked_intersection(const int n);
     Intersection& get_intersection(const int index);
     const Junction& get_junction(const int index) const;
-    static double get_arm_length() ;
+    static double get_arm_length();
+    void populate_junction_conjugates();
   private:
     void quasigrid_helper();
     static std::string class_name_;
@@ -85,10 +86,24 @@ class QuasiGrid{
     ///Make a vector tuple based on junction index with the contents being
     std::vector< Junction const*> junctions_;
     std::vector<JunctionRef> junction_refs_;
-
+    std::multimap<int,int> junction_conjugates_;
     static double arm_length_;
     static int default_arm_offset_;
 };
+
+void QuasiGrid::populate_junction_conjugates(){
+  for(const auto& intersection:intersections_){
+    auto& intersection_ref = intersection.get_intersection_ref();
+      auto& conjugate_map= intersection.get_junction_conjugate();
+      for(const auto& pair:conjugate_map){
+        std::cout << pair.first << " " << pair.second << std::endl;
+      }
+
+
+  }
+
+}
+
 double QuasiGrid::arm_length_ = {0.0};
 int QuasiGrid::default_arm_offset_ = {2};
 std::string QuasiGrid::class_name_ = {""};
@@ -193,6 +208,8 @@ void QuasiGrid::initialize_system() {
     it.set_junction_conjugate();
     it.print_conjugate();
   }
+
+populate_junction_conjugates();
   exit(0);
 
   std::cout << std::endl;

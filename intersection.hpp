@@ -19,6 +19,8 @@ class Intersection{
     static int get_junction_count() ;
     bool is_blocked(const int) const;
     void print_conjugate() const;
+
+const std::multimap<int,int>& get_junction_conjugate() const;
   private:
     void ctor_helper();
     std::vector<Junction> intersection_;
@@ -27,15 +29,21 @@ class Intersection{
     static unsigned counter_;
     static unsigned num_junctions_per_intersection_;
 };
+
+const std::multimap<int,int>& Intersection::get_junction_conjugate() const{
+return this->junction_conjugate_;
+}
+/**
+ * set conjugate junctions for each junction index
+ * By the nature of it it is a multimap from a single juncion index to several other (in theory for higher dimensions)
+ */
 void Intersection::set_junction_conjugate() {
   for(auto& junction:intersection_){
     auto label = junction.get_label();
     std::vector<Junction> other_junctions;
     std::vector<Junction>::iterator iter = intersection_.begin();
     while ((iter = std::find_if(iter, intersection_.end(), [=](const auto& val){ return label != val.get_label() ;})) != intersection_.end()) {
-      // Do something with iter
-      junction_conjugate_.insert(std::pair<int,int>(label, iter->get_label()));
-      //junction_conjugate_[label] = iter->get_label();
+      junction_conjugate_.emplace(label, iter->get_label());
       iter++;
     }
   }
