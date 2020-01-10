@@ -13,7 +13,10 @@
 #include <map>
 #include <random>
 #include <cmath>
-using  JunctionRef = std::reference_wrapper<Junction> ;
+using USH = unsigned short;
+using UI = unsigned int;
+using  JunctionRef = std::reference_wrapper<Junction> ;///This is a proposal to wrap a junction ref in a container
+
 // Outlier(Outlier const& other) = default;
 //    Outlier& operator=(Outlier const& other) = default;
 //    Outlier(Outlier&& other) = default;
@@ -28,10 +31,15 @@ class QuasiGrid{
     QuasiGrid& operator=(QuasiGrid const& ) = delete;
     QuasiGrid& operator=(QuasiGrid&& ) = delete;
     ~QuasiGrid();
+
+unsigned int get_num_particles_at_closed_packing() const ;
+void set_num_particles_at_closed_packing();
+unsigned int calculate_num_particles_at_closed_packing();
     bool is_blocked(const int&) const;///Check whether or not a junction is blocked
     void set_arm_length();
     void set_all_intersection_length() const;
     void print_all_intersection_length();
+    void occupy_junction(const int&,Particle * const& particle,const bool&  is_forward_direction=true) const;
     void print_intersection_labels();
     void print_junction_labels();
     void print_junction_coordinates();
@@ -40,11 +48,7 @@ class QuasiGrid{
     void set_system_len(const double& len);
     int get_next_junction_index(const double& x);
     const Junction* does_belong_to_junction(const double&) const;
-    inline double mod_len(const double x) {
-      if(x>=0)
-        return std::fmod(x,system_len_);
-      return (system_len_ - std::fmod(std::fabs(x),system_len_));
-    }
+    inline double mod_len(const double x) { if(x>=0) return std::fmod(x,system_len_); return (system_len_ - std::fmod(std::fabs(x),system_len_)); }
     void move_particle(const int& n,const double& dx);
     void distribute_junction_labels();
     void reassign_intersection_labels();
@@ -65,6 +69,7 @@ class QuasiGrid{
     const Junction& get_junction(const int index) const;
     static double get_arm_length();
     void populate_junction_conjugates();
+    void set_num_particles_per_middle_arm_at_max_packing(const int& k);
   private:
     void quasigrid_helper();
     static std::string class_name_;
@@ -90,7 +95,18 @@ class QuasiGrid{
     std::multimap<int,int> junction_conjugates_;
     static double arm_length_;
     static int default_arm_offset_;
+
+    static USH num_particles_per_middle_arm_at_max_packing_;///\brief K parameter in the paper
+    static UI num_particles_at_closed_packing_;///\brief $N^{cp}$ parameter in the paper
+    static UI min_no_of_particles_at_kinetic_arrest_;
+    static UI max_no_of_particles_at_kinetic_arrest_;
 };
+UI QuasiGrid::min_no_of_particles_at_kinetic_arrest_ = {0};
+UI QuasiGrid::max_no_of_particles_at_kinetic_arrest_ = {0};
+
+USH QuasiGrid::num_particles_per_middle_arm_at_max_packing_ = {1};
+ unsigned int QuasiGrid::num_particles_at_closed_packing_ = {0};///\brief $N^{cp}$ parameter in the paper
+
 void QuasiGrid::populate_junction_conjugates(){
   for(const auto& intersection:intersections_){
     auto& intersection_ref = intersection.get_intersection_ref();
@@ -130,11 +146,24 @@ void QuasiGrid::quasigrid_helper(){
   }
   */
 }
+unsigned int QuasiGrid::get_num_particles_at_closed_packing() const {
+
+  return num_particles_at_closed_packing_;
+}
+
+void QuasiGrid::set_num_particles_at_closed_packing(){
+  num_particles_at_closed_packing_ = this->calculate_num_particles_at_closed_packing();
+}
+
+unsigned int QuasiGrid::calculate_num_particles_at_closed_packing(){
+  return  2*(num_intersections_ + 1)*(num_particles_per_middle_arm_at_max_packing_ + 1) - num_intersections_;
+}
+
 double QuasiGrid::calculate_critical_density_c() const{
   double density = {0};
   switch (num_intersections_){
     case 1:
-      density = num_intersections_%2 == 0?static_cast<double>(num_particles_/(num_particles_ + 2.0)):static_cast<double>(num_particles_/(num_particles_ + 1.0));
+      density = num_intersections_%2 == 0?static_cast<double>(num_particles_)/(num_particles_ + 2.0):static_cast<double>(num_particles_/(num_particles_ + 1.0));
       break;
     case 2:
       break;
@@ -330,7 +359,6 @@ void QuasiGrid::set_arm_length() {
 double QuasiGrid::get_arm_length(){
   return arm_length_;
 }
-typedef std::multimap<int, int>::iterator MMAPIterator;
 bool QuasiGrid::is_blocked(const int& index) const{
   std::cout << "index:" << index  << std::endl;
   auto matches  = junction_conjugates_.equal_range(index);
@@ -343,4 +371,15 @@ bool QuasiGrid::is_blocked(const int& index) const{
   }
   return false;
 }
+
+
+void QuasiGrid::occupy_junction(const int& junction_index, Particle * const& particle,const bool& is_forward_direction)const{
+  const_cast<Junction *>(this->junctions_.at(junction_index))->occupy(particle,is_forward_direction);
+
+}
+
+void QuasiGrid::set_num_particles_per_middle_arm_at_max_packing(const int& k){
+  num_particles_per_middle_arm_at_max_packing_ = k;
+}
+
 #endif

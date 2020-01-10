@@ -15,25 +15,25 @@ int main(int argc, char** argv){
   std::copy(vec.begin(),vec.end(),std::ostream_iterator<std::string>(std::cout," "));
 #endif
 
-     Junction J;
-     Particle p;
-     Particle p2;
-     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
-     std::cerr << "occupying..." << std::endl;
-     J.occupy(&p);
-     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
-     p2.print();
-     J.occupy(&p2,false);
-     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
-     J.print_occupation();
-     std::cerr << "unoccupying..." << std::endl;
-     J.unoccupy();
-     J.print_occupation();
-     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
-     J.unoccupy();
-     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
-     J.unoccupy();
-     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
+//     Junction J;
+//     Particle p;
+//     Particle p2;
+//     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
+//     std::cerr << "occupying..." << std::endl;
+//     J.occupy(&p);
+//     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
+//     p2.print();
+//     J.occupy(&p2,false);
+//     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
+//     J.print_occupation();
+//     std::cerr << "unoccupying..." << std::endl;
+//     J.unoccupy();
+//     J.print_occupation();
+//     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
+//     J.unoccupy();
+//     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
+//     J.unoccupy();
+//     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
 
   auto n = 3;
   auto j = 3;
