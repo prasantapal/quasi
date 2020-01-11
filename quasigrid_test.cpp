@@ -15,34 +15,46 @@ int main(int argc, char** argv){
   std::copy(vec.begin(),vec.end(),std::ostream_iterator<std::string>(std::cout," "));
 #endif
 
-//     Junction J;
-//     Particle p;
-//     Particle p2;
-//     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
-//     std::cerr << "occupying..." << std::endl;
-//     J.occupy(&p);
-//     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
-//     p2.print();
-//     J.occupy(&p2,false);
-//     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
-//     J.print_occupation();
-//     std::cerr << "unoccupying..." << std::endl;
-//     J.unoccupy();
-//     J.print_occupation();
-//     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
-//     J.unoccupy();
-//     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
-//     J.unoccupy();
-//     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
+  //     Junction J;
+  //     Particle p;
+  //     Particle p2;
+  //     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
+  //     std::cerr << "occupying..." << std::endl;
+  //     J.occupy(&p);
+  //     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
+  //     p2.print();
+  //     J.occupy(&p2,false);
+  //     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
+  //     J.print_occupation();
+  //     std::cerr << "unoccupying..." << std::endl;
+  //     J.unoccupy();
+  //     J.print_occupation();
+  //     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
+  //     J.unoccupy();
+  //     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
+  //     J.unoccupy();
+  //     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
 
   auto n = 3;
-  auto j = 3;
+  auto j = 2;
   QuasiGrid q;
   q.set_num_particles(n);
   q.set_num_intersections(j);
   auto system_length = 2.0*M_PI;
   q.set_system_len(system_length);
   q.set_arm_length();
+  int num_particles_per_middle_arm_at_max_packing = 1;
+  q.set_num_particles_per_middle_arm_at_max_packing(num_particles_per_middle_arm_at_max_packing);
+  std::cout << q.get_num_particles_per_middle_arm_at_max_packing() << std::endl;
+  q.calculate_and_set_max_allowed_particles_in_end_lobes_at_max_packing();
+  std::cout << q.get_max_allowed_particles_in_end_lobes_at_max_packing() << std::endl;
+  q.calculate_and_set_min_no_of_particles_at_kinetic_arrest();
+  std::cout << q.get_min_no_of_particles_at_kinetic_arrest() << std::endl;
+
+
+
+  exit(0);
+
   q.initialize_system();
   q.print_intersection_labels();
   q.print_junction_labels();

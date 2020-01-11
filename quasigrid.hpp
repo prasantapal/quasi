@@ -32,9 +32,7 @@ class QuasiGrid{
     QuasiGrid& operator=(QuasiGrid&& ) = delete;
     ~QuasiGrid();
 
-    unsigned int get_num_particles_at_closed_packing() const ;
-    void set_num_particles_at_closed_packing();
-    unsigned int calculate_num_particles_at_closed_packing();
+
     bool is_blocked(const int&) const;///Check whether or not a junction is blocked
     void set_arm_length();
     void set_all_intersection_length() const;
@@ -69,13 +67,25 @@ class QuasiGrid{
     const Junction& get_junction(const int index) const;
     static double get_arm_length();
     void populate_junction_conjugates();
+
+    void set_min_no_of_particles_at_kinetic_arrest(const int&);
     int calculate_min_no_of_particles_at_kinetic_arrest() const ;
+    void calculate_and_set_min_no_of_particles_at_kinetic_arrest()  ;
+    int get_min_no_of_particles_at_kinetic_arrest() const ;
 
     void set_num_particles_per_middle_arm_at_max_packing(const int& k); ///This is a design choice related to the topology of a particular instance of quasi
+    int get_num_particles_per_middle_arm_at_max_packing() const; ///This is a design choice related to the topology of a particular instance of quasi
+
     int calculate_max_allowed_particles_in_end_lobes_at_max_packing() const;
     void set_max_allowed_particles_in_end_lobes_at_max_packing( const int& val);
-    int get_max_allowed_particles_in_end_lobes_at_max_packing() const;
     void calculate_and_set_max_allowed_particles_in_end_lobes_at_max_packing();
+    int get_max_allowed_particles_in_end_lobes_at_max_packing() const;
+
+    void calculate_and_set_num_particles_at_closed_packing();
+    void set_num_particles_at_closed_packing(const int& n);
+    unsigned int calculate_num_particles_at_closed_packing();
+    unsigned int get_num_particles_at_closed_packing() const ;
+
 
   private:
     void quasigrid_helper();
@@ -158,17 +168,22 @@ void QuasiGrid::quasigrid_helper(){
   }
   */
 }
-unsigned int QuasiGrid::get_num_particles_at_closed_packing() const {
 
+
+unsigned int QuasiGrid::get_num_particles_at_closed_packing() const {
   return num_particles_at_closed_packing_;
 }
 
-void QuasiGrid::set_num_particles_at_closed_packing(){
-  num_particles_at_closed_packing_ = this->calculate_num_particles_at_closed_packing();
+void QuasiGrid::set_num_particles_at_closed_packing(const int& n){
+  num_particles_at_closed_packing_ = n;
 }
 
 unsigned int QuasiGrid::calculate_num_particles_at_closed_packing(){
   return  2*(num_intersections_ + 1)*(num_particles_per_middle_arm_at_max_packing_ + 1) - num_intersections_;
+}
+
+void QuasiGrid::calculate_and_set_num_particles_at_closed_packing() {
+  this->set_num_particles_at_closed_packing(std::move(this->calculate_num_particles_at_closed_packing()));
 }
 
 double QuasiGrid::calculate_critical_density_c() const{
@@ -394,14 +409,27 @@ void QuasiGrid::set_num_particles_per_middle_arm_at_max_packing(const int& k){
   num_particles_per_middle_arm_at_max_packing_ = k;
 }
 
-int QuasiGrid::calculate_min_no_of_particles_at_kinetic_arrest() const{
+int QuasiGrid::get_min_no_of_particles_at_kinetic_arrest() const {
+  return this->min_no_of_particles_at_kinetic_arrest_;
+}
+void QuasiGrid::set_min_no_of_particles_at_kinetic_arrest(const int& n)  {
+  this->min_no_of_particles_at_kinetic_arrest_ = n;
+}
 
+int QuasiGrid::calculate_min_no_of_particles_at_kinetic_arrest() const{
   if(num_intersections_ > 1 ){
-    return 2*(max_allowed_particles_in_end_lobes_at_max_packing_ -1) + num_intersections_ * num_particles_per_middle_arm_at_max_packing_;
+    auto val =  2*(max_allowed_particles_in_end_lobes_at_max_packing_ -1 -1) + num_intersections_ * num_particles_per_middle_arm_at_max_packing_;
+    return val;
   }
   return 0;
-
 }
+
+
+void QuasiGrid::calculate_and_set_min_no_of_particles_at_kinetic_arrest()  {
+  this->set_min_no_of_particles_at_kinetic_arrest(std::move(this->calculate_min_no_of_particles_at_kinetic_arrest()));
+}
+
+
 void QuasiGrid::set_max_allowed_particles_in_end_lobes_at_max_packing( const int& val) {
   this->max_allowed_particles_in_end_lobes_at_max_packing_ = val;
 }
@@ -413,8 +441,13 @@ int QuasiGrid::calculate_max_allowed_particles_in_end_lobes_at_max_packing() con
 int QuasiGrid::get_max_allowed_particles_in_end_lobes_at_max_packing() const{
   return this->max_allowed_particles_in_end_lobes_at_max_packing_;
 }
+
 void QuasiGrid::calculate_and_set_max_allowed_particles_in_end_lobes_at_max_packing(){
   auto n(std::move(calculate_max_allowed_particles_in_end_lobes_at_max_packing()));
   set_max_allowed_particles_in_end_lobes_at_max_packing(n);
+}
+
+int QuasiGrid::get_num_particles_per_middle_arm_at_max_packing() const{
+  return this->num_particles_per_middle_arm_at_max_packing_;
 }
 #endif
