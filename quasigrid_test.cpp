@@ -52,6 +52,10 @@ int main(int argc, char** argv){
   std::cout << q.get_min_no_of_particles_at_kinetic_arrest() << std::endl;
 
 
+  q.calculate_and_set_num_particles_at_closed_packing();
+
+  std::cout << q.get_num_particles_at_closed_packing()  << std::endl;
+
 
   exit(0);
 

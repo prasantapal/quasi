@@ -14,7 +14,7 @@
 #include <random>
 #include <cmath>
 using USH = unsigned short;
-using UI = unsigned int;
+using UIN = unsigned int;
 using  JunctionRef = std::reference_wrapper<Junction> ;///This is a proposal to wrap a junction ref in a container
 
 // Outlier(Outlier const& other) = default;
@@ -86,6 +86,8 @@ class QuasiGrid{
     unsigned int calculate_num_particles_at_closed_packing();
     unsigned int get_num_particles_at_closed_packing() const ;
 
+void set_no_of_particles_above_min_no_particles_at_kinetic_arrest(const int& n);
+UIN get_no_of_particles_above_min_no_particles_at_kinetic_arrest() const;
 
   private:
     void quasigrid_helper();
@@ -114,18 +116,18 @@ class QuasiGrid{
     static int default_arm_offset_;
 
     static USH num_particles_per_middle_arm_at_max_packing_;///\brief K parameter in the paper
-    static UI num_particles_at_closed_packing_;///\brief $N^{cp}$ parameter in the paper
-    static UI max_no_of_particles_at_kinetic_arrest_;
-    static UI min_no_of_particles_at_kinetic_arrest_;
-    static UI no_of_particles_above_min_no_particles_at_kinetic_arrest_;
-    static UI range_of_particles_between_min_to_max_at_kinetic_arrest_;
+    static UIN num_particles_at_closed_packing_;///\brief $N^{cp}$ parameter in the paper
+    static UIN max_no_of_particles_at_kinetic_arrest_;
+    static UIN min_no_of_particles_at_kinetic_arrest_;
+    static UIN no_of_particles_above_min_no_particles_at_kinetic_arrest_;
+    static UIN range_of_particles_between_min_to_max_at_kinetic_arrest_;
     static USH max_allowed_particles_in_end_lobes_at_max_packing_;
 };
-UI QuasiGrid::min_no_of_particles_at_kinetic_arrest_ = {0};
-UI QuasiGrid::max_no_of_particles_at_kinetic_arrest_ = {0};
-UI QuasiGrid::no_of_particles_above_min_no_particles_at_kinetic_arrest_ = {0};
-UI QuasiGrid::range_of_particles_between_min_to_max_at_kinetic_arrest_ {0};
-UI QuasiGrid::num_particles_at_closed_packing_ = {0};///\brief $N^{cp}$ parameter in the paper
+UIN QuasiGrid::min_no_of_particles_at_kinetic_arrest_ = {0};
+UIN QuasiGrid::max_no_of_particles_at_kinetic_arrest_ = {0};
+UIN QuasiGrid::no_of_particles_above_min_no_particles_at_kinetic_arrest_ = {0};
+UIN QuasiGrid::range_of_particles_between_min_to_max_at_kinetic_arrest_ {0};
+UIN QuasiGrid::num_particles_at_closed_packing_ = {0};///\brief $N^{cp}$ parameter in the paper
 USH QuasiGrid::num_particles_per_middle_arm_at_max_packing_ = {1};
 USH QuasiGrid::max_allowed_particles_in_end_lobes_at_max_packing_ ={0};
 
@@ -399,7 +401,6 @@ bool QuasiGrid::is_blocked(const int& index) const{
   return false;
 }
 
-
 void QuasiGrid::occupy_junction(const int& junction_index, Particle * const& particle,const bool& is_forward_direction)const{
   const_cast<Junction *>(this->junctions_.at(junction_index))->occupy(particle,is_forward_direction);
 
@@ -416,10 +417,13 @@ void QuasiGrid::set_min_no_of_particles_at_kinetic_arrest(const int& n)  {
   this->min_no_of_particles_at_kinetic_arrest_ = n;
 }
 
-int QuasiGrid::calculate_min_no_of_particles_at_kinetic_arrest() const{
+int QuasiGrid::calculate_min_no_of_particles_at_kinetic_arrest() const{ ///This is the minimum number of particles where kinetic arrest will happen
   if(num_intersections_ > 1 ){
     auto val =  2*(max_allowed_particles_in_end_lobes_at_max_packing_ -1 -1) + num_intersections_ * num_particles_per_middle_arm_at_max_packing_;
     return val;
+  }else {
+    std::cerr << "sorry this can be calculated only for num_intersections > 1" << std::endl;
+    throw "num intersections > 1 ";
   }
   return 0;
 }
@@ -428,7 +432,6 @@ int QuasiGrid::calculate_min_no_of_particles_at_kinetic_arrest() const{
 void QuasiGrid::calculate_and_set_min_no_of_particles_at_kinetic_arrest()  {
   this->set_min_no_of_particles_at_kinetic_arrest(std::move(this->calculate_min_no_of_particles_at_kinetic_arrest()));
 }
-
 
 void QuasiGrid::set_max_allowed_particles_in_end_lobes_at_max_packing( const int& val) {
   this->max_allowed_particles_in_end_lobes_at_max_packing_ = val;
@@ -450,4 +453,14 @@ void QuasiGrid::calculate_and_set_max_allowed_particles_in_end_lobes_at_max_pack
 int QuasiGrid::get_num_particles_per_middle_arm_at_max_packing() const{
   return this->num_particles_per_middle_arm_at_max_packing_;
 }
+
+void QuasiGrid::set_no_of_particles_above_min_no_particles_at_kinetic_arrest(const int& n) {
+this->no_of_particles_above_min_no_particles_at_kinetic_arrest_ = n;
+}
+
+UIN QuasiGrid::get_no_of_particles_above_min_no_particles_at_kinetic_arrest() const{
+  return no_of_particles_above_min_no_particles_at_kinetic_arrest_;
+}
+
+
 #endif
