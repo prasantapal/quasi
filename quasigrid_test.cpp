@@ -50,14 +50,14 @@ int main(int argc, char** argv){
   std::cout << q.get_max_allowed_particles_in_end_lobes_at_max_packing() << std::endl;
   q.calculate_and_set_min_no_of_particles_at_kinetic_arrest();
   std::cout << q.get_min_no_of_particles_at_kinetic_arrest() << std::endl;
-
-
   q.calculate_and_set_num_particles_at_closed_packing();
-
   std::cout << q.get_num_particles_at_closed_packing()  << std::endl;
-  unsigned int m = 10;
-set_no_of_particles_above_min_no_particles_at_kinetic_arrest(m);
-std::cout << "no_of_particles_above_min_no_particles_at_kinetic_arrest:" << q.get_no_of_particles_above_min_no_particles_at_kinetic_arrest() << std::endl;
+  unsigned int m = 2;
+  q.set_no_of_particles_above_min_no_particles_at_kinetic_arrest(m);
+  std::cout << "no_of_particles_above_min_no_particles_at_kinetic_arrest:" << q.get_no_of_particles_above_min_no_particles_at_kinetic_arrest() << std::endl;
+  q.calculate_and_set_num_particles_from_filling_mode();
+
+  std::cout << "num particles " << q.get_num_particles() << std::endl;
 
 
 
