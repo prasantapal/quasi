@@ -82,6 +82,10 @@ std::cout << "s:" << s << std::endl;
   q.calculate_and_set_max_num_particles_at_kinetic_arrest();
   std::cout << "get_max_num_particles_at_kinetic_arrest:" << q.get_max_num_particles_at_kinetic_arrest() << std::endl;
 
+
+  double density_delta_log_cale = 2.0;
+  q.set_density_delta_log_scale(density_delta_log_cale);
+
   std::cout << "num particles " << q.get_num_particles() << std::endl;
 
   q.calculate_and_set_arm_void_length();
@@ -91,7 +95,15 @@ std::cout << "s:" << s << std::endl;
   std::cout << "get_particle_length:" << q.get_particle_len() << std::endl;
 q.calculate_num_particles_possible_in_system();
   q.calculate_and_set_density_kinetic_arrest();
+
+  q.calculate_and_set_density_from_density_delta_and_kinetic_arrest_density();
   std::cout << "density kinetic arrest:" << q.get_density_kinetic_arrest() << std::endl;
+  std::cout << "density :" << q.get_density() << std::endl;
+  q.calculate_and_set_particle_len();
+
+  std::cout << "particle_len :" << q.get_particle_len() << std::endl;
+
+
 q.print_system();
 
 

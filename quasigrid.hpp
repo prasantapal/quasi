@@ -42,6 +42,9 @@ class QuasiGrid{
     void print_junction_coordinates();
     void set_particle_len(const double& len);
     double get_particle_len() const;
+    double calculate_particle_len()const;
+    void calculate_and_set_particle_len();
+
     void set_junction_coordinates() const;
     void set_system_len(const double& len);
     double get_system_len() const;
@@ -60,6 +63,11 @@ class QuasiGrid{
 
 double calculate_density_kinetic_arrest();
 void calculate_and_set_density_kinetic_arrest();
+
+double calculate_density_from_density_delta_and_kinetic_arrest_density() const ;
+
+void calculate_and_set_density_from_density_delta_and_kinetic_arrest_density();
+
     /************* SYSTEM DEFINITIONS  ***************/
 
     void set_num_particles( const int n);
@@ -123,21 +131,21 @@ void calculate_and_set_density_kinetic_arrest();
     void calculate_and_set_density();
     void set_arm_void_length(const double&);
     double get_arm_void_length() const;
-double calculate_arm_void_length() const;
-void calculate_and_set_arm_void_length();
+    double calculate_arm_void_length() const;
+    void calculate_and_set_arm_void_length();
 
-void set_density_delta_log_scale(const double& density);
-double get_density_delta_log_scale()const;
-
-
-void set_density_close_packing(const double&);
-double get_density_close_packing() const;
+    void set_density_delta_log_scale(const double& density);
+    double get_density_delta_log_scale()const;
 
 
-void set_density_kinetic_arrest(const double& density);
-double get_density_kinetic_arrest() const;
+    void set_density_close_packing(const double&);
+    double get_density_close_packing() const;
 
-double calculate_density_kinetic_arrest()const;
+
+    void set_density_kinetic_arrest(const double& density);
+    double get_density_kinetic_arrest() const;
+
+    double calculate_density_kinetic_arrest()const;
 
   private:
     void quasigrid_helper();
@@ -409,7 +417,7 @@ void QuasiGrid::set_particle_len(const double& len){
 }
 
 double QuasiGrid::get_particle_len()const{
-return  particle_len_;
+  return  particle_len_;
 }
 
 void QuasiGrid::set_system_len(const double& len){
@@ -555,6 +563,17 @@ double QuasiGrid::get_density() const{
   return this->density_;
 }
 
+double QuasiGrid::calculate_density_from_density_delta_and_kinetic_arrest_density() const {
+
+  return density_kinetic_arrest_ - std::pow(10.0,-density_delta_log_scale_);
+}
+
+void QuasiGrid::calculate_and_set_density_from_density_delta_and_kinetic_arrest_density()  {
+
+  this->density_ = std::move(this->calculate_density_from_density_delta_and_kinetic_arrest_density());
+}
+
+
 double QuasiGrid::calculate_density() const {
   return static_cast<double>(num_particles_*particle_len_)/system_len_;
 }
@@ -613,11 +632,11 @@ double QuasiGrid::get_arm_void_length() const{
 
 
 double QuasiGrid::calculate_arm_void_length() const{
-return arm_length_ - 2.0*particle_len_;
+  return arm_length_ - 2.0*particle_len_;
 }
 
 void QuasiGrid::calculate_and_set_arm_void_length(){
-this->arm_void_length_ = std::move(this->calculate_arm_void_length());
+  this->arm_void_length_ = std::move(this->calculate_arm_void_length());
 }
 
 
@@ -646,20 +665,28 @@ double QuasiGrid::calculate_density_kinetic_arrest(){//phi_g
 
 
 void QuasiGrid::calculate_and_set_density_kinetic_arrest(){//phi_g
-this->set_density_kinetic_arrest(std::move(this->calculate_density_kinetic_arrest()));
+  this->set_density_kinetic_arrest(std::move(this->calculate_density_kinetic_arrest()));
 }
 
 
 void QuasiGrid::set_density_delta_log_scale(const double& density){
 
-this->density_delta_log_scale_ = density;
+  this->density_delta_log_scale_ = density;
 }
 
 double QuasiGrid::get_density_delta_log_scale()const{
 
-return  this->density_delta_log_scale_;
+  return  this->density_delta_log_scale_;
 }
 
+double QuasiGrid::calculate_particle_len()const{
+  return  (density_*system_len_)/num_particles_;
+}
 
+void QuasiGrid::calculate_and_set_particle_len(){
+
+  this->particle_len_ = std::move(this->calculate_particle_len());
+
+}
 
 #endif
