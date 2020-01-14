@@ -39,6 +39,5 @@ int main(int argc,char** argv){
         std::cout << j1.is_occupied() << std::endl;
 
 
-
 	return 0;
 }
