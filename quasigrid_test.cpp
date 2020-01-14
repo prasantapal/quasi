@@ -82,7 +82,6 @@ std::cout << "s:" << s << std::endl;
   q.calculate_and_set_max_num_particles_at_kinetic_arrest();
   std::cout << "get_max_num_particles_at_kinetic_arrest:" << q.get_max_num_particles_at_kinetic_arrest() << std::endl;
 
-
   std::cout << "num particles " << q.get_num_particles() << std::endl;
 
   q.calculate_and_set_arm_void_length();
@@ -90,6 +89,9 @@ std::cout << "s:" << s << std::endl;
   std::cout << "get_arm_void_length:" << q.get_arm_void_length() << std::endl;
   std::cout << "get_arm_length:" << q.get_arm_length() << std::endl;
   std::cout << "get_particle_length:" << q.get_particle_len() << std::endl;
+q.calculate_num_particles_possible_in_system();
+  q.calculate_and_set_density_kinetic_arrest();
+  std::cout << "density kinetic arrest:" << q.get_density_kinetic_arrest() << std::endl;
 q.print_system();
 
 

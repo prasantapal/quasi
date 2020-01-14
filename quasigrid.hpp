@@ -640,7 +640,7 @@ double QuasiGrid::get_density_kinetic_arrest() const{
 }
 
 double QuasiGrid::calculate_density_kinetic_arrest(){//phi_g
-  return static_cast<double>(num_particles_)/num_particles_possible_in_system_at_closed_packing_;
+  return static_cast<double>(num_particles_)/num_particles_possible_in_system_;
 
 }
 
