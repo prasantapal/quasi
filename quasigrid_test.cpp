@@ -13,6 +13,9 @@ int main(int argc, char** argv){
 //
 //std::cout << "f:" << f << std::endl;
 //exit(0);
+int s = std::nan(0);
+std::cout << "s:" << s << std::endl;
+
 
 
   std::string hello = "Hello, ";
@@ -59,16 +62,27 @@ int main(int argc, char** argv){
   std::cout << q.get_num_particles_per_middle_arm_at_max_packing() << std::endl;
   q.calculate_and_set_max_allowed_particles_in_end_lobes_at_max_packing();
   std::cout << q.get_max_allowed_particles_in_end_lobes_at_max_packing() << std::endl;
-  q.calculate_and_set_min_no_of_particles_at_kinetic_arrest();
-  std::cout << "get_min_no_of_particles_at_kinetic_arrest:" << q.get_min_no_of_particles_at_kinetic_arrest() << std::endl;
+  q.calculate_and_set_min_num_particles_at_kinetic_arrest();
+  std::cout << "get_min_no_of_particles_at_kinetic_arrest:" << q.get_min_num_particles_at_kinetic_arrest() << std::endl;
   q.calculate_and_set_num_particles_at_closed_packing();
   std::cout << q.get_num_particles_at_closed_packing()  << std::endl;
   unsigned int m = 2;
-  q.set_no_of_particles_above_min_no_particles_at_kinetic_arrest(m);
-  std::cout << "no_of_particles_above_min_no_particles_at_kinetic_arrest:" << q.get_no_of_particles_above_min_no_particles_at_kinetic_arrest() << std::endl;
-  q.calculate_and_set_num_particles_from_filling_mode();
+  q.set_num_particles_above_min_no_particles_at_kinetic_arrest(m);
+  std::cout << "no_of_particles_above_min_no_particles_at_kinetic_arrest:" << q.get_num_particles_above_min_no_particles_at_kinetic_arrest() << std::endl;
 
+  q.calculate_and_set_num_particles_from_filling_mode();
   q.calculate_and_set_num_particles_possible_in_system();
+  std::cout << "get_num_particles_possible_in_system:" << q.get_num_particles_possible_in_system () << std::endl;
+
+  std::cout << "get_num_particles_at_closed_packing:" << q.get_num_particles_at_closed_packing()  << std::endl;
+
+
+  std::cout << "get_min_num_particles_at_kinetic_arrest:" << q.get_min_num_particles_at_kinetic_arrest() << std::endl;
+
+  q.calculate_and_set_max_num_particles_at_kinetic_arrest();
+  std::cout << "get_max_num_particles_at_kinetic_arrest:" << q.get_max_num_particles_at_kinetic_arrest() << std::endl;
+
+
   std::cout << "num particles " << q.get_num_particles() << std::endl;
 q.print_system();
 
