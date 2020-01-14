@@ -2,7 +2,18 @@
 #define TEST_REFERENCE_WRAPPER
 #undef TEST_REFERENCE_WRAPPER
 int main(int argc, char** argv){
-#ifdef TEST_REFERENCE_WRAPPER
+
+#ifdef TEST_REFERENCE_WRAPPER ///Tes section
+//double f = std::numeric_limits<double>::quiet_NaN();
+//f = NAN;
+//if(std::isnan(f))
+//std::cout << "f:" << f << std::endl;
+//
+//f = 100.0;
+//
+//std::cout << "f:" << f << std::endl;
+//exit(0);
+
 
   std::string hello = "Hello, ";
   std::string world = "everyone!";
@@ -36,7 +47,7 @@ int main(int argc, char** argv){
   //     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
 
   auto n = 3;
-  auto j = 2;
+  auto j = 3;
   QuasiGrid q;
   q.set_num_particles(n);
   q.set_num_intersections(j);
@@ -49,7 +60,7 @@ int main(int argc, char** argv){
   q.calculate_and_set_max_allowed_particles_in_end_lobes_at_max_packing();
   std::cout << q.get_max_allowed_particles_in_end_lobes_at_max_packing() << std::endl;
   q.calculate_and_set_min_no_of_particles_at_kinetic_arrest();
-  std::cout << q.get_min_no_of_particles_at_kinetic_arrest() << std::endl;
+  std::cout << "get_min_no_of_particles_at_kinetic_arrest:" << q.get_min_no_of_particles_at_kinetic_arrest() << std::endl;
   q.calculate_and_set_num_particles_at_closed_packing();
   std::cout << q.get_num_particles_at_closed_packing()  << std::endl;
   unsigned int m = 2;
@@ -57,8 +68,9 @@ int main(int argc, char** argv){
   std::cout << "no_of_particles_above_min_no_particles_at_kinetic_arrest:" << q.get_no_of_particles_above_min_no_particles_at_kinetic_arrest() << std::endl;
   q.calculate_and_set_num_particles_from_filling_mode();
 
+  q.calculate_and_set_num_particles_possible_in_system();
   std::cout << "num particles " << q.get_num_particles() << std::endl;
-
+q.print_system();
 
 
   exit(0);
