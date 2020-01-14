@@ -84,6 +84,12 @@ std::cout << "s:" << s << std::endl;
 
 
   std::cout << "num particles " << q.get_num_particles() << std::endl;
+
+  q.calculate_and_set_arm_void_length();
+
+  std::cout << "get_arm_void_length:" << q.get_arm_void_length() << std::endl;
+  std::cout << "get_arm_length:" << q.get_arm_length() << std::endl;
+  std::cout << "get_particle_length:" << q.get_particle_len() << std::endl;
 q.print_system();
 
 
@@ -98,7 +104,7 @@ q.print_system();
   q.print_junction_coordinates();
   auto len = 0.1;
   auto eps = -0.00000001;
-  q.set_len(len);
+  q.set_particle_len(len);
   ///all keyword means there is a uniformity
   q.set_all_intersection_length();
   q.print_all_intersection_length();
@@ -116,7 +122,7 @@ q.print_system();
     std::cout << x << " belongs to junction " << val->get_label() << " " << val->get_x() << std::endl;
   }
   return 0;
-  std::cout << "critical density:" << q.calculate_critical_density_c() << std::endl;
+  std::cout << "critical density:" << q.calculate_density_close_packing() << std::endl;
   for(auto i=0;i<n;i++)
     std::cout << q.get_random_particle() << std::endl;
   std::cout << std::endl;

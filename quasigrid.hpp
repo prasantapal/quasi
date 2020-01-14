@@ -40,7 +40,8 @@ class QuasiGrid{
     void print_intersection_labels();
     void print_junction_labels();
     void print_junction_coordinates();
-    void set_len(const double& len);
+    void set_particle_len(const double& len);
+    double get_particle_len() const;
     void set_junction_coordinates() const;
     void set_system_len(const double& len);
     double get_system_len() const;
@@ -55,7 +56,10 @@ class QuasiGrid{
     inline double get_random()   { return  normal_dist_(particle_motion_generator_); }
     inline double get_random_particle()   { return  particle_selection_dist_(particle_selection_generator_); }
     void set_particle_selection_distribution();
-    double calculate_critical_density_c() const;
+    double calculate_density_close_packing() const;
+
+double calculate_density_kinetic_arrest();
+void calculate_and_set_density_kinetic_arrest();
     /************* SYSTEM DEFINITIONS  ***************/
 
     void set_num_particles( const int n);
@@ -117,6 +121,23 @@ class QuasiGrid{
     double get_density() const;
     double calculate_density() const;
     void calculate_and_set_density();
+    void set_arm_void_length(const double&);
+    double get_arm_void_length() const;
+double calculate_arm_void_length() const;
+void calculate_and_set_arm_void_length();
+
+void set_density_delta_log_scale(const double& density);
+double get_density_delta_log_scale()const;
+
+
+void set_density_close_packing(const double&);
+double get_density_close_packing() const;
+
+
+void set_density_kinetic_arrest(const double& density);
+double get_density_kinetic_arrest() const;
+
+double calculate_density_kinetic_arrest()const;
 
   private:
     void quasigrid_helper();
@@ -128,14 +149,16 @@ class QuasiGrid{
     std::mt19937 particle_selection_generator_{particle_selection_()};
     std::uniform_int_distribution<> particle_selection_dist_{1, 6};
     double density_;
-    double critical_density_c_;
-    double critical_density_g_;
+    double density_close_packing_;
+    double density_kinetic_arrest_;
+    double density_delta_log_scale_;
+    double density_delta_;
     int num_intersections_;
     int num_junctions_;
     int num_particles_;
     int num_particles_possible_in_system_at_closed_packing_;
     int num_particle_size_voids_at_kinetic_arrest_;
-    double len_;
+    double particle_len_;
     double system_len_;;
     double len_at_kinetic_arrest_;
 
@@ -147,6 +170,8 @@ class QuasiGrid{
     std::vector<JunctionRef> junction_refs_;
     std::multimap<int,int> junction_conjugates_;
     static double arm_length_;
+    static double arm_void_length_;
+
     static int default_arm_offset_;
     static USH num_particles_per_middle_arm_at_max_packing_;///\brief K parameter in the paper
     static UIN num_particles_at_closed_packing_;///\brief $N^{cp}$ parameter in the paper
@@ -173,6 +198,8 @@ UIN QuasiGrid::range_of_particles_between_min_to_max_at_kinetic_arrest_ = {0};
 UIN QuasiGrid::num_particles_at_closed_packing_ = {0};///\brief $N^{cp}$ parameter in the paper
 USH QuasiGrid::num_particles_per_middle_arm_at_max_packing_ = {0};
 USH QuasiGrid::max_allowed_particles_in_end_lobes_at_max_packing_ ={0};
+double QuasiGrid::arm_void_length_ = NAN;
+
 void QuasiGrid::populate_junction_conjugates(){
   for(const auto& intersection:intersections_){
     auto& intersection_ref = intersection.get_intersection_ref();
@@ -229,7 +256,7 @@ void QuasiGrid::calculate_and_set_num_particles_at_closed_packing() {
 
 
 
-double QuasiGrid::calculate_critical_density_c() const{
+double QuasiGrid::calculate_density_close_packing() const{
   double density = {0};
   switch (num_intersections_){
     case 1:
@@ -375,9 +402,16 @@ void QuasiGrid::move_particle(const int& n,const double& dx){
     }
   }
 }
-void QuasiGrid::set_len(const double& len){
-  len_ = len;
+
+
+void QuasiGrid::set_particle_len(const double& len){
+  particle_len_ = len;
 }
+
+double QuasiGrid::get_particle_len()const{
+return  particle_len_;
+}
+
 void QuasiGrid::set_system_len(const double& len){
   system_len_ = len;
 }
@@ -409,7 +443,7 @@ void QuasiGrid::print_all_intersection_length(){
 void QuasiGrid::set_all_intersection_length()const {
   std::cerr << "setting all junction length" << std::endl;
   for(const auto& it:junctions_){
-    (const_cast<Junction*>(it))->set_len(this->len_);
+    (const_cast<Junction*>(it))->set_len(this->particle_len_);
   }
 }
 void QuasiGrid::set_junction_coordinates() const{
@@ -522,7 +556,7 @@ double QuasiGrid::get_density() const{
 }
 
 double QuasiGrid::calculate_density() const {
-  return static_cast<double>(num_particles_*len_)/system_len_;
+  return static_cast<double>(num_particles_*particle_len_)/system_len_;
 }
 void QuasiGrid::calculate_and_set_density() {
   this->density_ = std::move(this->calculate_density());
@@ -564,8 +598,66 @@ UIN QuasiGrid::get_max_num_particles_at_kinetic_arrest()const{
 UIN QuasiGrid::calculate_max_num_particles_at_kinetic_arrest() const{
   return num_particles_at_closed_packing_ - this->min_particle_size_voids_needed_for_kinetic_arrest_;
 }
+
 void QuasiGrid::calculate_and_set_max_num_particles_at_kinetic_arrest(){
   this->max_num_particles_at_kinetic_arrest_ = std::move(this->calculate_max_num_particles_at_kinetic_arrest());
+}
+
+void QuasiGrid::set_arm_void_length(const double& len){
+  arm_void_length_ = len;
+}
+
+double QuasiGrid::get_arm_void_length() const{
+  return arm_void_length_ ;
+}
+
+
+double QuasiGrid::calculate_arm_void_length() const{
+return arm_length_ - 2.0*particle_len_;
+}
+
+void QuasiGrid::calculate_and_set_arm_void_length(){
+this->arm_void_length_ = std::move(this->calculate_arm_void_length());
+}
+
+
+void QuasiGrid::set_density_close_packing(const double& density){
+  density_close_packing_ = density;
+
+}
+double QuasiGrid::get_density_close_packing() const{
+  return this->density_close_packing_;
+
+}
+
+void QuasiGrid::set_density_kinetic_arrest(const double& density){
+  density_kinetic_arrest_ = density;
+
+}
+double QuasiGrid::get_density_kinetic_arrest() const{
+  return this->density_kinetic_arrest_;
+
+}
+
+double QuasiGrid::calculate_density_kinetic_arrest(){//phi_g
+  return static_cast<double>(num_particles_)/num_particles_possible_in_system_at_closed_packing_;
+
+}
+
+
+void QuasiGrid::calculate_and_set_density_kinetic_arrest(){//phi_g
+this->set_density_kinetic_arrest(std::move(this->calculate_density_kinetic_arrest()));
+}
+
+
+void QuasiGrid::set_density_delta_log_scale(const double& density){
+
+this->density_delta_log_scale_ = density;
+}
+
+double QuasiGrid::get_density_delta_log_scale()const{
+
+return  this->density_delta_log_scale_;
 }
 
 
