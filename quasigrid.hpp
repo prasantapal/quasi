@@ -155,7 +155,7 @@ class QuasiGrid{
     void calculate_and_set_system_state_size();
     void set_system_state_size(const UIN&);
     UIN get_system_state_size() const;
-    std::vector<UIN> calculate_system_state() const;
+    std::vector<UIN> calculate_system_state();
     UIN calculate_lower_end_lobe_occupation() const;
     UIN calculate_upper_end_lobe_occupation() const;
     std::vector<Particle>&  get_particles();
@@ -213,6 +213,7 @@ class QuasiGrid{
     std::string output_file_path_ = {""};///\brief output folder path
     std::string trajectory_output_file_complete_path_ = {""};
     std::vector<UIN> system_state_;
+    std::string system_state_string_;
     UIN system_state_size_;
     static std::string system_state_delimiter_;
     static std::vector<std::tuple<double,double>> lower_end_lobe_boundaries_;
@@ -676,7 +677,7 @@ std::string QuasiGrid::get_trajectory_input_filename() const{
 }
 UIN QuasiGrid::calculate_system_state_size() const{
   std::cout << "num_junctions_:" << num_intersections_ << " " << 2 + num_intersections_ + 2*num_intersections_ << std::endl;
-  return 2 + num_intersections_ + 2*num_intersections_;
+  return 2 + num_intersections_ + 2*(num_intersections_ -1);
 }
 void QuasiGrid::set_system_state_size( const UIN& size){
   this->system_state_size_ = size;
@@ -691,6 +692,7 @@ UIN QuasiGrid::calculate_lower_end_lobe_occupation() const{
 }
 UIN QuasiGrid::calculate_upper_end_lobe_occupation() const{
 }
+
 void QuasiGrid::AssignStateLablesToParticles() {
 #ifdef  VERBOSE
   std::cerr << "in function " << __func__ << std::endl;
@@ -699,11 +701,39 @@ void QuasiGrid::AssignStateLablesToParticles() {
     std::cerr << "particle label:"<< it.get_label() << std::endl;
   }
 }
-std::vector<UIN> QuasiGrid::calculate_system_state() const{
-  ///First lower end lobe this.StateLabels.EndLobe with value 0
-  //junctions
-  //middle lobes
-  ///last upper end lobe this.StateLabels.EndLobe with value 1
+
+std::vector<UIN> QuasiGrid::calculate_system_state() {
+decltype(system_state_) system_state(this->system_state_size_,0);
+
+
+for( auto& particle:particles_){
+ auto region = which_region_particle_belong_to(particle);
+ auto region_label = std::get<0>(region);
+ auto region_index = std::get<1>(region);
+short vector_location = {0};
+
+switch(region_label){
+  case StateLabels::EndLobe:
+    vector_location = (region_index == 0)?region_index:(system_state_size_-1);
+    system_state.at(vector_location)++;
+
+    break;
+  case StateLabels::JunctionLocation:
+    break;
+  case StateLabels::MiddleLobe:
+    break;
+  default:
+    std::cout << "unknown region label" << std::endl;
+    throw "unknown region label";
+    break;
+}
+
+}
+///First lower end lobe this.StateLabels.EndLobe with value 0
+//junctions
+//middle lobes
+///last upper end lobe this.StateLabels.EndLobe with value 1
+return system_state;
 }
 void QuasiGrid::print_particles() const{
   std::cout << "label" << " " << " x " << " uncorrected x" << " state label " << " state label id" << std::endl;
@@ -711,6 +741,7 @@ void QuasiGrid::print_particles() const{
     std::cout << it.get_label() << " " << it.get_x() << " " << it.get_X() << " " << it.get_state_label() << " " << it.get_state_label_id() << std::endl;
   }
 }
+
 void QuasiGrid::print_end_lobe_boundaries() const{
   std::cout << "lower end lobe boundaries" << std::endl;
   for(const auto& it:lower_end_lobe_boundaries_){
@@ -721,6 +752,9 @@ void QuasiGrid::print_end_lobe_boundaries() const{
     print_tuple(it);
   }
 }
+/**
+ *
+ */
 std::tuple<USH,USH> QuasiGrid::which_region_particle_belong_to(const Particle& p){
   ///END LOBE CALCULATION
   int location;

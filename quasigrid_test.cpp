@@ -160,4 +160,6 @@ void test_block( QuasiGrid& q){
   q.calculate_and_set_num_arms();
   std::cout << "num arms:" << q.get_num_arms() << std::endl;
   std::cout << " arm len:" << q.get_arm_length() << std::endl;
+  q.calculate_and_set_system_state_size();
+  std::cout << " system state size " << q.get_system_state_size()  << std::endl;
 }
