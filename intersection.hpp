@@ -1,5 +1,5 @@
-#include "junction.hpp"
 #include <map>
+#include "junction.hpp"
 /**
  *Intersection consists of two junctions
  */

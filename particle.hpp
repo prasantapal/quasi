@@ -6,6 +6,7 @@
 #include <cmath>
 #include <mutex>
 #include <string>
+using USH = unsigned short int;
 class Particle{
   public:
     Particle();
@@ -27,8 +28,10 @@ class Particle{
     void set_x(const double&& x);
     void set_X(const double& x);
     void set_X(const double&& x);
+    double get_X() const;
     void set_len(const double x) ;
     void set_system_len(const double x) ;
+    unsigned int get_label() const;
 /****** THIS IS  A VERY IMPORTANT FUNCTION ****************/
     inline bool does_belong_to(const double& x) {//Check whether or not a point below to the particle geometrical boundaries
       auto lower_boundary_ =  mod_len(x_ - len_half_);
@@ -46,6 +49,15 @@ class Particle{
     void set_filename(std::string& filename);
     void time_evolve(const int& n);
     void print() const;
+
+    void set_state_label(const USH&);
+    USH get_state_label() const;
+
+    void set_state_label_id(const USH&);
+    USH get_state_label_id()const;
+
+
+
   private:
     void  ctor_helper();
     double x_ = {0};
@@ -58,6 +70,9 @@ class Particle{
     static double len_;
     static double len_half_;
     static double system_len_;
+    /*** STATE LABEL ****/
+    USH state_label_;
+    USH state_label_id_;
 };
 double Particle::len_ = {0};
 double Particle::len_half_ = {0};
@@ -95,6 +110,9 @@ void Particle::set_X(const double& x){
 }
 void Particle::set_X(const double&& x){
   X_ = x;
+}
+double Particle::get_X() const{///Uncorrected coordinate
+  this->X_;
 }
 void Particle::time_evolve(const int& n){
   std::call_once(seed_initializer_,[](){
@@ -135,4 +153,26 @@ double Particle::get_len() const{
 void Particle::print() const{
   std::cout << "id:" << id_ << " x:" << x_ << " " << " len:" << len_<< std::endl;
 }
+
+unsigned int Particle::get_label() const{
+  return this->id_;
+}
+
+void Particle::set_state_label(const USH& label)  {
+  this->state_label_ = label;
+}
+USH Particle::get_state_label() const {
+  return this->state_label_;
+}
+
+void Particle::set_state_label_id(const USH& id)  {
+  this->state_label_id_ = id;
+}
+
+USH Particle::get_state_label_id() const {
+  return this->state_label_id_;
+}
+
+
+
 #endif
