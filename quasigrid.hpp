@@ -99,7 +99,7 @@ class QuasiGrid{
     void print_end_lobe_boundaries() const;
     void depopulate_blocked_intersection(const int n);
     Intersection& get_intersection(const int index);
-    const Junction& get_junction(const int index) const;
+     Junction& get_junction(const int index) ;
     void set_num_arms(const UIN&);
     UIN calculate_num_arms() const;
     void calculate_and_set_num_arms();
@@ -176,7 +176,9 @@ class QuasiGrid{
     double density_delta_log_scale_;
     double density_delta_;
     int num_intersections_;
+    int num_intersections_half_;
     int num_junctions_;
+    int num_junctions_half_;
     int num_particles_;
     int num_particles_possible_in_system_at_closed_packing_;
     int num_particle_size_voids_at_kinetic_arrest_;
@@ -189,7 +191,7 @@ class QuasiGrid{
     std::vector<Intersection> intersections_;
     std::list<int> blocked_intersections_; ///This contains the labels for blocked intersections
     ///Make a vector tuple based on junction index with the contents being
-    std::vector<Junction const*> junctions_;
+    std::vector<Junction *> junctions_;
     //    std::vector<JunctionRef> junction_refs_;
     std::multimap<int,int> junction_conjugates_;
     static double arm_length_;
@@ -311,12 +313,16 @@ int QuasiGrid::get_num_particles() const {
 }
 void QuasiGrid::set_num_intersections( const int n){
   num_intersections_ = n;
+  num_intersections_half_ = num_intersections_/2;
+num_junctions_half_  = num_intersections_;
+
 }
 UIN QuasiGrid::get_num_intersections() const {
   return num_intersections_;
 }
 void QuasiGrid::set_num_junctions( const int n){
   num_junctions_ = n;
+num_junctions_half_ = num_junctions_/2;
 }
 UIN QuasiGrid::get_num_junctions() const {
   return num_junctions_;
@@ -489,7 +495,7 @@ void QuasiGrid::set_junction_coordinates() const{
   std::cout << std::endl;
   std::cout << std::endl;
 }
-const Junction& QuasiGrid::get_junction(const int n) const{
+Junction& QuasiGrid::get_junction(const int n) {
   return *junctions_.at(n-1);
 }
 Intersection& QuasiGrid::get_intersection(const int n){
@@ -703,6 +709,7 @@ void QuasiGrid::AssignStateLablesToParticles() {
 }
 
 std::vector<UIN> QuasiGrid::calculate_system_state() {
+  std::cerr << "calculating system states for " << num_particles_ << std::endl;
 decltype(system_state_) system_state(this->system_state_size_,0);
 
 
@@ -714,11 +721,29 @@ short vector_location = {0};
 
 switch(region_label){
   case StateLabels::EndLobe:
+    std::cout << "end lobe:" << region_index << " " <<  system_state.at(vector_location)<< std::endl;
     vector_location = (region_index == 0)?region_index:(system_state_size_-1);
     system_state.at(vector_location)++;
 
     break;
   case StateLabels::JunctionLocation:
+    std::cout << "junction location:" << region_index << std::endl;
+    if(region_index < num_junctions_half_){
+      vector_location = 1 + 3*region_index;
+      system_state.at(vector_location)++;
+
+    }else {
+      std::cout << "else condition " << region_index << std::endl;
+//    vector_location =
+region_index -= num_junctions_half_;
+region_index = num_junctions_half_ - region_index -1;
+      std::cout << "else condition " << region_index << std::endl;
+      vector_location = 1 + 3*region_index;
+if(system_state.at(vector_location) == 0)
+system_state.at(vector_location) = 2;
+system_state.at(vector_location)++;
+
+    }
     break;
   case StateLabels::MiddleLobe:
     break;
@@ -727,14 +752,21 @@ switch(region_label){
     throw "unknown region label";
     break;
 }
-
 }
+std::cout << "system state " << std::endl;
+for(const auto& it:system_state) {
+  std::cout << it;
+}
+
+std::cout << std::endl;
 ///First lower end lobe this.StateLabels.EndLobe with value 0
 //junctions
 //middle lobes
 ///last upper end lobe this.StateLabels.EndLobe with value 1
 return system_state;
 }
+
+
 void QuasiGrid::print_particles() const{
   std::cout << "label" << " " << " x " << " uncorrected x" << " state label " << " state label id" << std::endl;
   for(const auto& it:particles_) {

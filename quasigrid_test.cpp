@@ -43,9 +43,23 @@ int main(int argc, char** argv){
   }
   std::cout << "q.get_system_len():" << q.get_system_len() << std::endl;
   auto& p = particles.at(0);
+  auto& j = q.get_junction(6);
   p.set_x(q.get_system_len()/2.0);
   p.print();
   std::cout << " arm index :" << q.calculate_arm_index(p) << std::endl;
+  j.print();
+
+
+  p.set_x(j.get_x());
+
+  auto& pp = particles.at(1);
+
+  pp.set_x(j.get_x());
+  j.occupy(&p);
+  j.occupy(&pp);
+
+q.calculate_system_state();
+ // p.print();
   exit(0);
   auto n= 5;
   //      auto intersection_ptr = intersections.get_intersection_ptr();
@@ -72,12 +86,12 @@ int main(int argc, char** argv){
   return 0;
 }
 void test_block( QuasiGrid& q){
-  //     Junction J;
-  //     Particle p;
+     // Junction J;
+       //Particle p;
   //     Particle p2;
   //     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
   //     std::cerr << "occupying..." << std::endl;
-  //     J.occupy(&p);
+       //J.occupy(&p);
   //     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
   //     p2.print();
   //     J.occupy(&p2,false);
@@ -161,5 +175,6 @@ void test_block( QuasiGrid& q){
   std::cout << "num arms:" << q.get_num_arms() << std::endl;
   std::cout << " arm len:" << q.get_arm_length() << std::endl;
   q.calculate_and_set_system_state_size();
+  q.print_junction_coordinates();
   std::cout << " system state size " << q.get_system_state_size()  << std::endl;
 }

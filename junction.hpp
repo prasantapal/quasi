@@ -64,9 +64,11 @@ class Junction{
     double get_x() const;
     unsigned get_id() const;
     double get_len() const;
-    void occupy(Particle* const&,bool is_forward = true);///occupy a junction either with a forward of backward movement
+    void occupy(Particle* ,bool is_forward = true);///occupy a junction either with a forward of backward movement
     void unoccupy(bool is_forward = true);///unoccupy a junction either with forward or backward movement
     void print_occupation() const;
+    void print() const;
+
     bool is_occupied() const;
     void set_occupation(const short pos);
     void reset_occupation(const short pos);
@@ -188,7 +190,8 @@ bool Junction::get_is_blocked() const {
 * Occupy the junction with a particle.
 *
 */
-void Junction::occupy(Particle* const & p,bool is_forward){///If forward then queue the list in the back or in the front
+void Junction::occupy(Particle* p,bool is_forward){///If forward then queue the list in the back or in the front
+  std::cerr << "occupything junction " << this->get_label() << " with particle " << p->get_label() << std::endl;
   if(is_forward)
     this->occupations_.emplace_back(p);
   else
@@ -219,6 +222,9 @@ void Junction::print_occupation() const{
   }
 }
 
+void Junction::print() const{
+  std::cout << "label:" << id_ << " " << " x:" << x_ << std::endl;
+}
 int Junction::get_junction_count() {
   return counter_;
 }
