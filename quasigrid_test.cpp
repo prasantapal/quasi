@@ -43,7 +43,7 @@ int main(int argc, char** argv){
   }
   std::cout << "q.get_system_len():" << q.get_system_len() << std::endl;
   auto& p = particles.at(0);
-  auto& j = q.get_junction(6);
+  auto& j = q.get_junction(2);
   p.set_x(q.get_system_len()/2.0);
   p.print();
   std::cout << " arm index :" << q.calculate_arm_index(p) << std::endl;
