@@ -885,7 +885,9 @@ Particle&  QuasiGrid::get_particle(const USH& index) {
   return particles_.at(index-1);
   else {
     std::cerr << "sorry index is out of bound" << std::endl;
+    throw "index out of bound";
   }
+
 }
 std::vector<Particle>&  QuasiGrid::get_particles() {
   return particles_;
