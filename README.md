@@ -3,6 +3,8 @@
 New incarnation of quasi
 classes:
   quasi_grid is the name  of the main class
+  TBD:
+///Get Junction need to transformed into 1 index based as opposed to 0 index based
 
 
   Notes:

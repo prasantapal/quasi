@@ -499,6 +499,9 @@ void QuasiGrid::set_junction_coordinates() const{
   std::cout << std::endl;
   std::cout << std::endl;
 }
+/**
+ *
+ */
 Junction& QuasiGrid::get_junction(const int n) {
   return *junctions_.at(n-1);
 }
@@ -506,7 +509,7 @@ Intersection& QuasiGrid::get_intersection(const int n){
   if(n<=intersections_.size() && n>=1)
     return intersections_.at(n-1);
   else{
-    std::cerr << "index " << n << " out of range " << std::endl;
+    std::cerr << "intersection index " << n << " out of range " << std::endl;
     throw "index out of range";
   }
 }
@@ -878,7 +881,11 @@ USH QuasiGrid::calculate_arm_index(const Particle& p){
   return static_cast<USH>(p.get_x()/arm_length_);
 }
 Particle&  QuasiGrid::get_particle(const USH& index) {
-  return particles_.at(index);
+  if(index>0 && index <= particles_.size())
+  return particles_.at(index-1);
+  else {
+    std::cerr << "sorry index is out of bound" << std::endl;
+  }
 }
 std::vector<Particle>&  QuasiGrid::get_particles() {
   return particles_;

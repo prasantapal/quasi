@@ -37,7 +37,7 @@ int main(int argc, char** argv){
   }
   std::cout << "individual particles" << std::endl;
   for(auto& it:particles){
-    auto& p = q.get_particle(it.get_label());
+    auto& p = q.get_particle(it.get_label() + 1);
     p.print();
     std::cout << "arm index :" << q.calculate_arm_index(p) << std::endl;
   }
