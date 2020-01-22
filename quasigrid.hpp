@@ -43,6 +43,9 @@ class QuasiGrid{
     QuasiGrid& operator=(QuasiGrid const& ) = delete;
     QuasiGrid& operator=(QuasiGrid&& ) = delete;
     ~QuasiGrid();
+    double calculate_mid_lobe_location(const int index) const;
+
+    double get_mid_lobe_location(const int&);
     std::tuple<USH,USH> which_region_particle_belong_to(const Particle& p);
     int does_belong_to_end_lobe(const Particle& p);
     int does_belong_to_junction(const Particle& p);
@@ -734,18 +737,34 @@ switch(region_label){
 
     }else {
       std::cout << "else condition " << region_index << std::endl;
-//    vector_location =
-region_index -= num_junctions_half_;
-region_index = num_junctions_half_ - region_index -1;
+      //    vector_location =
+      region_index -= num_junctions_half_;
+      region_index = num_junctions_half_ - region_index -1;
       std::cout << "else condition " << region_index << std::endl;
       vector_location = 1 + 3*region_index;
-if(system_state.at(vector_location) == 0)
-system_state.at(vector_location) = 2;
-system_state.at(vector_location)++;
+      if(system_state.at(vector_location) == 0)
+        system_state.at(vector_location) = 2;
+      system_state.at(vector_location)++;
 
     }
     break;
   case StateLabels::MiddleLobe:
+    std::cout << "mid lobe location:" << region_index << " num arms " << num_arms_ << " " << num_arms_half_  << std::endl;
+  if(region_index < num_arms_half_ ){
+      vector_location = 2 + 3*(region_index-1);
+      system_state.at(vector_location)++;
+
+    }else {
+      std::cout << "else condition " << region_index << std::endl;
+      //    vector_location =
+      region_index -= num_arms_half_;
+      region_index = num_arms_half_ - region_index -1;
+      std::cout << "mid lobe else condition " << region_index << std::endl;
+      vector_location = 3 + 3*(region_index-1);
+      system_state.at(vector_location)++;
+
+    }
+
     break;
   default:
     std::cout << "unknown region label" << std::endl;
@@ -878,5 +897,12 @@ UIN QuasiGrid::calculate_num_arms() const{
 }
 void QuasiGrid::calculate_and_set_num_arms(){
   this->set_num_arms(std::move(this->calculate_num_arms()));
+}
+
+
+double QuasiGrid::calculate_mid_lobe_location(const int index) const{
+  std::cout << "arm_length:" << arm_length_ << std::endl;
+return arm_length_*(static_cast<double>(index) - 0.5);
+
 }
 #endif

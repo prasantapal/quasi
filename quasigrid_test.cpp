@@ -43,7 +43,7 @@ int main(int argc, char** argv){
   }
   std::cout << "q.get_system_len():" << q.get_system_len() << std::endl;
   auto& p = particles.at(0);
-  auto& j = q.get_junction(2);
+  auto& j = q.get_junction(1);
   p.set_x(q.get_system_len()/2.0);
   p.print();
   std::cout << " arm index :" << q.calculate_arm_index(p) << std::endl;
@@ -53,13 +53,14 @@ int main(int argc, char** argv){
   p.set_x(j.get_x());
 
   auto& pp = particles.at(1);
+  pp.set_x(q.calculate_mid_lobe_location(7));
 
-  pp.set_x(j.get_x());
-  j.occupy(&p);
-  j.occupy(&pp);
+auto& ppp = particles.at(2);
+  ppp.set_x(q.calculate_mid_lobe_location(2));
 
 q.calculate_system_state();
- // p.print();
+  p.print();
+  pp.print();
   exit(0);
   auto n= 5;
   //      auto intersection_ptr = intersections.get_intersection_ptr();
