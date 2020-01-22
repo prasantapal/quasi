@@ -54,7 +54,8 @@ class QuasiGrid{
     void populate_end_lobe_boundaries() ;
     void print_particles() const;
     void print_system() const;
-    bool is_blocked(const int&) const;///Check whether or not a junction is blocked
+    bool is_blocked( Junction&) const;///Check whether or not a junction is blocked
+    //bool is_blocked(const int&) const;///Check whether or not a junction is blocked
     void set_arm_length();
     double get_arm_length() const;
     void set_all_intersection_length() const;
@@ -389,7 +390,7 @@ void QuasiGrid::initialize_system() {
   std::cout << std::endl;
   std::cout << "checking is blocked" << std::endl;
   for(auto& it:junctions_){
-    this->is_blocked(it->get_label());
+    this->is_blocked(*junctions_.at(it->get_label()));
   }
 }
 void QuasiGrid::populate_blocked_intersection(const int n){
@@ -516,12 +517,12 @@ void QuasiGrid::set_arm_length() {
 double QuasiGrid::get_arm_length() const{
   return arm_length_;
 }
-bool QuasiGrid::is_blocked(const int& index) const{
-  std::cout << "index:" << index  << std::endl;
-  auto matches  = junction_conjugates_.equal_range(index);
+bool QuasiGrid::is_blocked(Junction& j) const{
+//  std::cout << "index:" << index  << std::endl;
+  auto matches  = junction_conjugates_.equal_range(j.get_label());
   // Iterate over the range
   for (auto it = matches.first; it != matches.second; it++){
-    std::cout << it->second << std::endl;
+    //std::cout << it->second << std::endl;
     if((junctions_.at(it->second))->is_occupied()){
       return true;
     }

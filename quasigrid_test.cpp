@@ -44,13 +44,17 @@ int main(int argc, char** argv){
   std::cout << "q.get_system_len():" << q.get_system_len() << std::endl;
   auto& p = particles.at(0);
   auto& j = q.get_junction(1);
-  p.set_x(q.get_system_len()/2.0);
+
+  std::cout << "occupation status of jn 5 " << q.is_blocked(q.get_junction(5)) << std::endl;
+
+  p.set_x(j.get_x());
+
+  j.occupy(&p);
+
+  std::cout << "occupation status of jn 5 " << q.is_blocked(q.get_junction(6)) << std::endl;
   p.print();
   std::cout << " arm index :" << q.calculate_arm_index(p) << std::endl;
   j.print();
-
-
-  p.set_x(j.get_x());
 
   auto& pp = particles.at(1);
   pp.set_x(q.calculate_mid_lobe_location(7));
@@ -58,7 +62,8 @@ int main(int argc, char** argv){
 auto& ppp = particles.at(2);
   ppp.set_x(q.calculate_mid_lobe_location(2));
 
-q.calculate_system_state();
+
+  q.calculate_system_state();
   p.print();
   pp.print();
   exit(0);
