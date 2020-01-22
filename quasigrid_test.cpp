@@ -52,6 +52,9 @@ int main(int argc, char** argv){
   j.occupy(&p);
 
   std::cout << "occupation status of jn 5 " << q.is_blocked(q.get_junction(6)) << std::endl;
+
+  j.unoccupy();
+  std::cout << "occupation status of jn 5 " << q.is_blocked(q.get_junction(6)) << std::endl;
   p.print();
   std::cout << " arm index :" << q.calculate_arm_index(p) << std::endl;
   j.print();
