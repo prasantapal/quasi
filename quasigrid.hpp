@@ -44,6 +44,10 @@ class QuasiGrid{
     QuasiGrid& operator=(QuasiGrid&& ) = delete;
     ~QuasiGrid();
     double calculate_mid_lobe_location(const int index) const;
+    void set_system_length_scales();
+    void set_system_void_spaces();
+    std::map<std::string,double> get_system_length_scales() const;
+    std::map<std::string,double> get_system_void_spaces() const;
 
     double get_mid_lobe_location(const int&);
     std::tuple<USH,USH> which_region_particle_belong_to(const Particle& p);
@@ -54,7 +58,7 @@ class QuasiGrid{
     void populate_end_lobe_boundaries() ;
     void print_particles() const;
     void print_system() const;
-    bool is_blocked( Junction&) const;///Check whether or not a junction is blocked
+    bool is_blocked(const Junction&) const;///Check whether or not a junction is blocked
     //bool is_blocked(const int&) const;///Check whether or not a junction is blocked
     void set_arm_length();
     double get_arm_length() const;
@@ -103,7 +107,7 @@ class QuasiGrid{
     void print_end_lobe_boundaries() const;
     void depopulate_blocked_intersection(const int n);
     Intersection& get_intersection(const int index);
-     Junction& get_junction(const int index) ;
+    Junction& get_junction(const int index) ;
     void set_num_arms(const UIN&);
     UIN calculate_num_arms() const;
     void calculate_and_set_num_arms();
@@ -226,7 +230,12 @@ class QuasiGrid{
     static std::vector<std::tuple<double,double>> upper_end_lobe_boundaries_;
     static UIN  num_arms_;
     static UIN  num_arms_half_;
+    static std::map<std::string,double> system_length_scales_; ///Different length scales
+    static std::map<std::string,double> system_void_spaces_; ///Different void spaces
 };
+
+std::map<std::string,double> QuasiGrid::system_void_spaces_; ///Different length scales
+std::map<std::string,double> QuasiGrid::system_length_scales_;
 UIN  QuasiGrid::num_arms_ = {0};
 UIN  QuasiGrid::num_arms_half_ = {0};
 std::vector<std::tuple<double,double>> QuasiGrid::lower_end_lobe_boundaries_;
@@ -318,7 +327,7 @@ int QuasiGrid::get_num_particles() const {
 void QuasiGrid::set_num_intersections( const int n){
   num_intersections_ = n;
   num_intersections_half_ = num_intersections_/2;
-num_junctions_half_  = num_intersections_;
+  num_junctions_half_  = num_intersections_;
 
 }
 UIN QuasiGrid::get_num_intersections() const {
@@ -326,7 +335,7 @@ UIN QuasiGrid::get_num_intersections() const {
 }
 void QuasiGrid::set_num_junctions( const int n){
   num_junctions_ = n;
-num_junctions_half_ = num_junctions_/2;
+  num_junctions_half_ = num_junctions_/2;
 }
 UIN QuasiGrid::get_num_junctions() const {
   return num_junctions_;
@@ -420,26 +429,49 @@ int QuasiGrid::get_next_junction_index(const double& x){
 }
 ///Check if there is a blocked junction before or after the next particle
 void QuasiGrid::move_particle(const int& n,const double& dx){
-  auto x = particles_[n].get_x();
-  if(dx>0){
-    auto neighbor_particle  = mod_num_particles(n+1);
-    if(!particles_[neighbor_particle].does_belong_to(x + dx)){///Particle constraint is cleared now the junction constraint
+  short int sign_of_dx = dx>0?1:-1;
+bool is_forward_move = sign_of_dx ==1?true:false;
+  auto x = particles_.at(n).get_x();
+  auto x_next = x + sign_of_dx*dx;
+
+    auto neighbor_particle  = mod_num_particles(n + sign_of_dx);
+    if(!particles_.at(neighbor_particle).does_belong_to(x_next)){///Particle constraint is cleared now the junction constraint
       bool is_blocked_by_junction = {false};
+      bool should_break_intersection_loop = {false};
       for(auto it:intersections_){
         auto& intersection_ref = it.get_intersection_ref();
-        for(auto& its:intersection_ref){
-          std::cout << "blocking status " << its.get_is_blocked() << std::endl;
+
+        for(const Junction& its:intersection_ref){///its is a junction
+          bool did_belong_to_junction = its.does_belong_to(x);
+          bool does_belong_to_junction = its.does_belong_to(x_next);
+          if(did_belong_to_junction) {
+            if(does_belong_to_junction) {//regular update
+
+            } else {//exit from junction
+              //its.unoccupy(true);
+#warning ENSURE NEW OBJECTS ARE NOT BEING CREATED HERE
+              std::remove_const<Junction>::type its_non_const(its);
+              its_non_const.unoccupy(is_forward_move);
+            }
+          }else {
+            if(does_belong_to_junction){ //new belongning to junction
+              std::remove_const<Junction>::type its_non_const(its);
+              its_non_const.occupy(&particles_.at(n),is_forward_move);
+
+            } else {///neighter belonged to junction nor it does now!
+              ///regular jump
+            }
+          }
         }
+        if(should_break_intersection_loop)
+          break;
+
       }
     }else {///Well do nothing
     }
-  }else {
-    auto neighbor_particle  = mod_num_particles(n-1);
-    if(!particles_[neighbor_particle].does_belong_to(x - dx)){///Particle constraint is cleared now the junction constraint
-    }else {///Well do nothing
-    }
-  }
+
 }
+
 void QuasiGrid::set_particle_len(const double& len){
   particle_len_ = len;
 }
@@ -520,8 +552,8 @@ void QuasiGrid::set_arm_length() {
 double QuasiGrid::get_arm_length() const{
   return arm_length_;
 }
-bool QuasiGrid::is_blocked(Junction& j) const{
-//  std::cout << "index:" << index  << std::endl;
+bool QuasiGrid::is_blocked(const Junction& j) const{
+  std::cout << "index:" << index  << std::endl;
   auto matches  = junction_conjugates_.equal_range(j.get_label());
   // Iterate over the range
   for (auto it = matches.first; it != matches.second; it++){
@@ -717,76 +749,76 @@ void QuasiGrid::AssignStateLablesToParticles() {
 
 std::vector<UIN> QuasiGrid::calculate_system_state() {
   std::cerr << "calculating system states for " << num_particles_ << std::endl;
-decltype(system_state_) system_state(this->system_state_size_,0);
+  decltype(system_state_) system_state(this->system_state_size_,0);
 
 
-for( auto& particle:particles_){
- auto region = which_region_particle_belong_to(particle);
- auto region_label = std::get<0>(region);
- auto region_index = std::get<1>(region);
-short vector_location = {0};
+  for( auto& particle:particles_){
+    auto region = which_region_particle_belong_to(particle);
+    auto region_label = std::get<0>(region);
+    auto region_index = std::get<1>(region);
+    short vector_location = {0};
 
-switch(region_label){
-  case StateLabels::EndLobe:
-    std::cout << "end lobe:" << region_index << " " <<  system_state.at(vector_location)<< std::endl;
-    vector_location = (region_index == 0)?region_index:(system_state_size_-1);
-    system_state.at(vector_location)++;
+    switch(region_label){
+      case StateLabels::EndLobe:
+        std::cout << "end lobe:" << region_index << " " <<  system_state.at(vector_location)<< std::endl;
+        vector_location = (region_index == 0)?region_index:(system_state_size_-1);
+        system_state.at(vector_location)++;
 
-    break;
-  case StateLabels::JunctionLocation:
-    std::cout << "junction location:" << region_index << std::endl;
-    if(region_index < num_junctions_half_){
-      vector_location = 1 + 3*region_index;
-      system_state.at(vector_location)++;
+        break;
+      case StateLabels::JunctionLocation:
+        std::cout << "junction location:" << region_index << std::endl;
+        if(region_index < num_junctions_half_){
+          vector_location = 1 + 3*region_index;
+          system_state.at(vector_location)++;
 
-    }else {
-      std::cout << "else condition " << region_index << std::endl;
-      //    vector_location =
-      region_index -= num_junctions_half_;
-      region_index = num_junctions_half_ - region_index -1;
-      std::cout << "else condition " << region_index << std::endl;
-      vector_location = 1 + 3*region_index;
-      if(system_state.at(vector_location) == 0)
-        system_state.at(vector_location) = 2;
-      system_state.at(vector_location)++;
+        }else {
+          std::cout << "else condition " << region_index << std::endl;
+          //    vector_location =
+          region_index -= num_junctions_half_;
+          region_index = num_junctions_half_ - region_index -1;
+          std::cout << "else condition " << region_index << std::endl;
+          vector_location = 1 + 3*region_index;
+          if(system_state.at(vector_location) == 0)
+            system_state.at(vector_location) = 2;
+          system_state.at(vector_location)++;
 
+        }
+        break;
+      case StateLabels::MiddleLobe:
+        std::cout << "mid lobe location:" << region_index << " num arms " << num_arms_ << " " << num_arms_half_  << std::endl;
+        if(region_index < num_arms_half_ ){
+          vector_location = 2 + 3*(region_index-1);
+          system_state.at(vector_location)++;
+
+        }else {
+          std::cout << "else condition " << region_index << std::endl;
+          //    vector_location =
+          region_index -= num_arms_half_;
+          region_index = num_arms_half_ - region_index -1;
+          std::cout << "mid lobe else condition " << region_index << std::endl;
+          vector_location = 3 + 3*(region_index-1);
+          system_state.at(vector_location)++;
+
+        }
+
+        break;
+      default:
+        std::cout << "unknown region label" << std::endl;
+        throw "unknown region label";
+        break;
     }
-    break;
-  case StateLabels::MiddleLobe:
-    std::cout << "mid lobe location:" << region_index << " num arms " << num_arms_ << " " << num_arms_half_  << std::endl;
-  if(region_index < num_arms_half_ ){
-      vector_location = 2 + 3*(region_index-1);
-      system_state.at(vector_location)++;
+  }
+  std::cout << "system state " << std::endl;
+  for(const auto& it:system_state) {
+    std::cout << it;
+  }
 
-    }else {
-      std::cout << "else condition " << region_index << std::endl;
-      //    vector_location =
-      region_index -= num_arms_half_;
-      region_index = num_arms_half_ - region_index -1;
-      std::cout << "mid lobe else condition " << region_index << std::endl;
-      vector_location = 3 + 3*(region_index-1);
-      system_state.at(vector_location)++;
-
-    }
-
-    break;
-  default:
-    std::cout << "unknown region label" << std::endl;
-    throw "unknown region label";
-    break;
-}
-}
-std::cout << "system state " << std::endl;
-for(const auto& it:system_state) {
-  std::cout << it;
-}
-
-std::cout << std::endl;
-///First lower end lobe this.StateLabels.EndLobe with value 0
-//junctions
-//middle lobes
-///last upper end lobe this.StateLabels.EndLobe with value 1
-return system_state;
+  std::cout << std::endl;
+  ///First lower end lobe this.StateLabels.EndLobe with value 0
+  //junctions
+  //middle lobes
+  ///last upper end lobe this.StateLabels.EndLobe with value 1
+  return system_state;
 }
 
 
@@ -882,7 +914,7 @@ USH QuasiGrid::calculate_arm_index(const Particle& p){
 }
 Particle&  QuasiGrid::get_particle(const USH& index) {
   if(index>0 && index <= particles_.size())
-  return particles_.at(index-1);
+    return particles_.at(index-1);
   else {
     std::cerr << "sorry index is out of bound" << std::endl;
     throw "index out of bound";
@@ -912,7 +944,26 @@ void QuasiGrid::calculate_and_set_num_arms(){
 
 double QuasiGrid::calculate_mid_lobe_location(const int index) const{
   std::cout << "arm_length:" << arm_length_ << std::endl;
-return arm_length_*(static_cast<double>(index) - 0.5);
+  return arm_length_*(static_cast<double>(index) - 0.5);
 
+}
+//total system void
+//total system void minus filled junctions
+
+void QuasiGrid::set_system_void_spaces() {
+}
+std::map<std::string,double>  QuasiGrid::get_system_void_spaces() const{
+
+  return this->system_void_spaces_;
+}
+
+void QuasiGrid::set_system_length_scales() {
+  //particle length
+  //squeezed middle lobe length scale
+  //total system void minus filled junctions scale
+}
+
+std::map<std::string,double> QuasiGrid::get_system_length_scales() const{
+  return this->system_length_scales_;
 }
 #endif
