@@ -38,11 +38,13 @@ class QuasiGrid{
   public:
     enum Direction {Forward,Backward};
     enum StateLabels {EndLobe,JunctionLocation,MiddleLobe};
+    enum SimulationMode {FIXED_STEP_SIZE,ADAPTIVE_STEP_SIZE};
     QuasiGrid();
     QuasiGrid(QuasiGrid&) = delete;
     QuasiGrid& operator=(QuasiGrid const& ) = delete;
     QuasiGrid& operator=(QuasiGrid&& ) = delete;
     ~QuasiGrid();
+    void time_update();
     double calculate_mid_lobe_location(const int index) const;
     void set_system_length_scales();
     void set_system_void_spaces();
@@ -168,6 +170,9 @@ class QuasiGrid{
     UIN calculate_upper_end_lobe_occupation() const;
     std::vector<Particle>&  get_particles();
     Particle&  get_particle(const USH& index);
+    void increment_simulation_time_elapsed(const  double incr = 1.0);
+    void increment_simulation_steps_elapsed(const UIN incr = 1.0);
+
   private:
     void quasigrid_helper();
     static std::string class_name_;
@@ -232,8 +237,42 @@ class QuasiGrid{
     static UIN  num_arms_half_;
     static std::map<std::string,double> system_length_scales_; ///Different length scales
     static std::map<std::string,double> system_void_spaces_; ///Different void spaces
+    static short int simulation_mode_;
+    static double simulation_time_elapsed_;
+    static long long simulation_steps_elapsed_;
+
+    static std::string length_scale_tag_particle_length_;
+    static std::string length_scale_tag_arm_length_;
+    static std::string length_scale_tag_end_lobe_length_;
+    static std::string length_scale_tag_middle_lobe_length_;
+
+    static std::string void_space_tag_total_system_wide_void_;
+    static std::string void_space_tag_total_junction_corrected_system_wide_void_;
+    static std::string void_space_tag_squeezed_end_lobe_void_;
+    static std::string void_space_tag_squeezed_middle_lobe_void_;
+    static std::string void_space_tag_average_squeezed_end_lobe_void_;
+    static std::string void_space_tag_average_squeezed_middle_lobe_void_;
+
+
 };
 
+static std::string length_scale_tag_particle_length_ = {"particle_length"};
+static std::string length_scale_tag_arm_length_= {"arm_length"};
+static std::string length_scale_tag_end_lobe_length_= {"end_lobe_length"};
+static std::string length_scale_tag_middle_lobe_length_ = {"middle_lobe_length"};
+
+static std::string void_space_tag_total_system_wide_void_ = {"system_wide_void"};
+static std::string void_space_tag_total_junction_corrected_system_wide_void_ = {"junction_corrected_system_wide_void"};
+static std::string void_space_tag_squeezed_end_lobe_void_ = {"squeezed_end_lobe_void"};
+static std::string void_space_tag_squeezed_middle_lobe_void_ = {"squeezed_middle_lobe_void"};
+static std::string void_space_tag_average_squeezed_end_lobe_void_ = {"average_squeezed_end_lobe_void"};
+static std::string void_space_tag_average_squeezed_middle_lobe_void_ = {"average_squeezed_middle_lobe_void"};
+
+
+long long QuasiGrid::simulation_steps_elapsed_ = {0};
+double QuasiGrid::simulation_time_elapsed_ = {0.0};
+
+short int QuasiGrid::simulation_mode_ = {QuasiGrid::SimulationMode::FIXED_STEP_SIZE};
 std::map<std::string,double> QuasiGrid::system_void_spaces_; ///Different length scales
 std::map<std::string,double> QuasiGrid::system_length_scales_;
 UIN  QuasiGrid::num_arms_ = {0};
@@ -252,7 +291,20 @@ UIN QuasiGrid::range_of_particles_between_min_to_max_at_kinetic_arrest_ = {0};
 UIN QuasiGrid::num_particles_at_closed_packing_ = {0};///\brief $N^{cp}$ parameter in the paper
 USH QuasiGrid::num_particles_per_middle_arm_at_max_packing_ = {0};
 USH QuasiGrid::max_allowed_particles_in_end_lobes_at_max_packing_ ={0};
+
 double QuasiGrid::arm_void_length_ = NAN;
+
+void QuasiGrid::increment_simulation_time_elapsed(const double incr ){
+  simulation_time_elapsed_ += std::fabs(incr);
+}
+void QuasiGrid::increment_simulation_steps_elapsed(const UIN incr){
+
+  this->simulation_steps_elapsed_ += incr;
+}
+
+
+
+
 void QuasiGrid::populate_junction_conjugates(){
   for(const auto& intersection:intersections_){
     auto& intersection_ref = intersection.get_intersection_ref();
@@ -430,46 +482,54 @@ int QuasiGrid::get_next_junction_index(const double& x){
 ///Check if there is a blocked junction before or after the next particle
 void QuasiGrid::move_particle(const int& n,const double& dx){
   short int sign_of_dx = dx>0?1:-1;
-bool is_forward_move = sign_of_dx ==1?true:false;
+  bool is_forward_move = sign_of_dx ==1?true:false;
   auto x = particles_.at(n).get_x();
   auto x_next = x + sign_of_dx*dx;
 
-    auto neighbor_particle  = mod_num_particles(n + sign_of_dx);
-    if(!particles_.at(neighbor_particle).does_belong_to(x_next)){///Particle constraint is cleared now the junction constraint
-      bool is_blocked_by_junction = {false};
-      bool should_break_intersection_loop = {false};
-      for(auto it:intersections_){
-        auto& intersection_ref = it.get_intersection_ref();
+  auto neighbor_particle  = mod_num_particles(n + sign_of_dx);
+  if(!particles_.at(neighbor_particle).does_belong_to(x_next)){///Particle constraint is cleared now the junction constraint
+    bool is_blocked_by_junction = {false};
+    bool does_move_involve_junction = {false};
+    for(auto it:intersections_){
+      auto& intersection_ref = it.get_intersection_ref();
 
-        for(const Junction& its:intersection_ref){///its is a junction
-          bool did_belong_to_junction = its.does_belong_to(x);
-          bool does_belong_to_junction = its.does_belong_to(x_next);
+      for(const Junction& its:intersection_ref){///its is a junction
+        bool did_belong_to_junction = its.does_belong_to(x);
+        bool does_belong_to_junction = its.does_belong_to(x_next);
+        if(did_belong_to_junction || does_belong_to_junction)
+          does_move_involve_junction = true;
+        if(does_move_involve_junction){
+
           if(did_belong_to_junction) {
             if(does_belong_to_junction) {//regular update
 
             } else {//exit from junction
-              //its.unoccupy(true);
 #warning ENSURE NEW OBJECTS ARE NOT BEING CREATED HERE
               std::remove_const<Junction>::type its_non_const(its);
               its_non_const.unoccupy(is_forward_move);
             }
           }else {
             if(does_belong_to_junction){ //new belongning to junction
-              std::remove_const<Junction>::type its_non_const(its);
-              its_non_const.occupy(&particles_.at(n),is_forward_move);
+              std::remove_const<Junction>::type junction_non_const(its);
+              junction_non_const.occupy(&particles_.at(n),is_forward_move);
 
             } else {///neighter belonged to junction nor it does now!
-              ///regular jump
+              //simple update with regular jump
             }
           }
+        }else {
+          ///simple jump here
         }
-        if(should_break_intersection_loop)
-          break;
+      }///junction loop per intersection
+    }///intersection loop
 
-      }
-    }else {///Well do nothing
-    }
+  }else {//nothing to do as blocked by neighbors
 
+  }
+  time_update();
+}
+
+void QuasiGrid::time_update(){
 }
 
 void QuasiGrid::set_particle_len(const double& len){
@@ -956,6 +1016,8 @@ std::map<std::string,double>  QuasiGrid::get_system_void_spaces() const{
 
   return this->system_void_spaces_;
 }
+
+
 
 void QuasiGrid::set_system_length_scales() {
   //particle length
