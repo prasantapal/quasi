@@ -4,8 +4,8 @@
 #include<fstream>
 #include <thread>
 #include <cmath>
-#include <mutex>
 #include <string>
+#include <mutex>
 using USH = unsigned short int;
 class Particle{
   public:
