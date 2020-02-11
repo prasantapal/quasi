@@ -115,7 +115,7 @@ void test_block( QuasiGrid& q){
   //     J.unoccupy();
   //     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
   auto n = 3;
-  auto j = 3;
+  auto j = 2;
   q.set_num_particles(n);
   q.set_num_intersections(j);
   auto system_length = 2.0*M_PI;
@@ -124,6 +124,8 @@ void test_block( QuasiGrid& q){
   q.set_arm_length();
   int num_particles_per_middle_arm_at_max_packing = 1;
   q.set_num_particles_per_middle_arm_at_max_packing(num_particles_per_middle_arm_at_max_packing);
+///This defines a lot of the system
+
   std::cout << q.get_num_particles_per_middle_arm_at_max_packing() << std::endl;
   q.calculate_and_set_max_allowed_particles_in_end_lobes_at_max_packing();
   std::cout << q.get_max_allowed_particles_in_end_lobes_at_max_packing() << std::endl;
@@ -168,7 +170,12 @@ void test_block( QuasiGrid& q){
   ///all keyword means there is a uniformity
   q.set_all_intersection_length();
   q.print_all_intersection_length();
+  std::cout << "printing system " << std::endl;
+q.calculate_and_set_num_particle_size_voids_at_kinetic_arrest();
+std::cout << q.get_num_particle_size_voids_at_kinetic_arrest() << std::endl;
   q.print_system();
+
+  exit(0);
   auto input_filename = "input.txt";
   auto output_filename = "output.txt";
   q.set_trajectory_input_filename(input_filename);
@@ -186,4 +193,5 @@ void test_block( QuasiGrid& q){
   q.calculate_and_set_system_state_size();
   q.print_junction_coordinates();
   std::cout << " system state size " << q.get_system_state_size()  << std::endl;
+  exit(0);
 }
