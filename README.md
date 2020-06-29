@@ -1,6 +1,5 @@
-
 # quasi
-New incarnation of quasi
+A single page (.hpp) implementation of  Quasi One Dimensional Models
 classes:
   quasi_grid is the name  of the main class
   TBD:

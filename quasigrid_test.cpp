@@ -1,4 +1,30 @@
+/***************************************************************************************************
+ **************** Quasi One Dimensional Models ***************
+ * Developed by Dr. Prasanta Pal, Brown University
+ *     '                                                                                                                                          
+
+
+                           (  ) (@@) ( )  (@)  ()    @@    O     @     O     @      O
+                      (@@@)
+                  (    )
+               (@@@@)
+
+             (   )
+            ====        ________                ___________
+        _D _|  |_______/        \__I_I_____===__|_________|
+         |(_)---  |   H\________/ |   |        =|___ ___|      _________________
+         /     |  |   H  |  |     |   |         ||_| |_||     _|                \_____A
+        |      |  |   H  |__--------------------| [___] |   =|                        |
+        | ________|___H__/__|_____/[][]~\_______|       |   -|                        |
+        |/ |   |-----------I_____I [][] []  D   |=======|____|________________________|_
+      __/ =| o |=-~~\  /~~\  /~~\  /~~\ ____Y___________|__|__________________________|_
+       |/-=|___|=   O=====O=====O=====O|_____/~\___/          |_D__D__D_|  |_D__D__D_|
+        \_/      \__/  \__/  \__/  \__/      \_/               \_/   \_/    \_/   \_/
+
+***************************************************************************************************/
+/*************** TEST BLOCK *********************************************************************/
 #include "quasigrid.hpp"
+
 #define TEST_REFERENCE_WRAPPER
 #undef TEST_REFERENCE_WRAPPER
 void test_block(QuasiGrid&);
@@ -32,11 +58,11 @@ int main(int argc, char** argv){
   std::cout << "system state size " << q.get_system_state_size() << std::endl;
   std::cout << "done with test block" << std::endl;
   auto& particles = q.get_particles();
-  for(auto& it:particles) {
+  for(const auto& it:particles) {
     it.print();
   }
   std::cout << "individual particles" << std::endl;
-  for(auto& it:particles){
+  for(const auto& it:particles){
     auto& p = q.get_particle(it.get_label() + 1);
     p.print();
     std::cout << "arm index :" << q.calculate_arm_index(p) << std::endl;
@@ -62,7 +88,7 @@ int main(int argc, char** argv){
   auto& pp = particles.at(1);
   pp.set_x(q.calculate_mid_lobe_location(7));
 
-auto& ppp = particles.at(2);
+  auto& ppp = particles.at(2);
   ppp.set_x(q.calculate_mid_lobe_location(2));
 
 
@@ -95,12 +121,12 @@ auto& ppp = particles.at(2);
   return 0;
 }
 void test_block( QuasiGrid& q){
-     // Junction J;
-       //Particle p;
+  // Junction J;
+  //Particle p;
   //     Particle p2;
   //     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
   //     std::cerr << "occupying..." << std::endl;
-       //J.occupy(&p);
+  //J.occupy(&p);
   //     std::cerr << "occupation status:"<< J.is_occupied() << std::endl;
   //     p2.print();
   //     J.occupy(&p2,false);
@@ -124,7 +150,7 @@ void test_block( QuasiGrid& q){
   q.set_arm_length();
   int num_particles_per_middle_arm_at_max_packing = 1;
   q.set_num_particles_per_middle_arm_at_max_packing(num_particles_per_middle_arm_at_max_packing);
-///This defines a lot of the system
+  ///This defines a lot of the system
 
   std::cout << q.get_num_particles_per_middle_arm_at_max_packing() << std::endl;
   q.calculate_and_set_max_allowed_particles_in_end_lobes_at_max_packing();
@@ -171,8 +197,8 @@ void test_block( QuasiGrid& q){
   q.set_all_intersection_length();
   q.print_all_intersection_length();
   std::cout << "printing system " << std::endl;
-q.calculate_and_set_num_particle_size_voids_at_kinetic_arrest();
-std::cout << q.get_num_particle_size_voids_at_kinetic_arrest() << std::endl;
+  q.calculate_and_set_num_particle_size_voids_at_kinetic_arrest();
+  std::cout << q.get_num_particle_size_voids_at_kinetic_arrest() << std::endl;
   q.print_system();
 
   exit(0);

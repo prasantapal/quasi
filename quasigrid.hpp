@@ -1,5 +1,6 @@
 #ifndef QUASI_GRID_HPP
 #define QUASI_GRID_HPP
+
 #include "particle.hpp"
 #include "intersection.hpp"
 #include <list>
@@ -13,16 +14,20 @@
 #include <map>
 #include <random>
 #include <cmath>
+#include <cxxabi.h>
+
 using USH = unsigned short;
 using UIN = unsigned int;
 using  JunctionRef = std::reference_wrapper<Junction> ;///This is a proposal to wrap a junction ref in a container
+
   template<class TupType, size_t... I>
-void print_tuple(const TupType& _tup, std::index_sequence<I...>)
-{
+void print_tuple(const TupType& _tup, std::index_sequence<I...>) {
   std::cout << "(";
   (..., (std::cout << (I == 0? "" : ", ") << std::get<I>(_tup)));
   std::cout << ")\n";
 }
+
+
 /**
  *
  **/
@@ -31,19 +36,14 @@ void print_tuple (const std::tuple<T...>& _tup)
 {
   print_tuple(_tup, std::make_index_sequence<sizeof...(T)>());
 }
-/**
- *
- **/
-// Outlier(Outlier const& other) = default;
-//    Outlier& operator=(Outlier const& other) = default;
-//    Outlier(Outlier&& other) = default;
-//    Outlier& operator=(Outlier&& other) = default;
-//
 ///Junction is the unit of intersection
+// -------------------------------
+/// @Synopsis  <QuasiGrid Base Class>
+// ---------------------------------
 class QuasiGrid{
   public:
     enum Direction {
-      Forward,
+      Forward, /// \brief differentiates between forward and backward movement
       Backward
     };
     enum StateLabels {
@@ -51,7 +51,7 @@ class QuasiGrid{
       JunctionLocation,
       MiddleLobe
     };
-    enum SimulationMode {
+    enum SimulationMode {///\brief defines  the mode of simulation
       FIXED_STEP_SIZE,
       ADAPTIVE_STEP_SIZE
     };
@@ -60,6 +60,8 @@ class QuasiGrid{
     QuasiGrid(const QuasiGrid&) = delete; ///\brief copy ctor deleted to avoid extraneous copies
     QuasiGrid& operator=(QuasiGrid const& ) = delete; ///\brief same as above
     QuasiGrid& operator=(QuasiGrid&& ) = delete; ///\brief same as above
+    std::string calculate_demangled_classname();
+
     UIN get_num_particle_size_voids_at_kinetic_arrest() const;
     template<typename T>
       void set_num_particle_size_voids_at_kinetic_arrest(const T) ;
@@ -74,7 +76,7 @@ class QuasiGrid{
       void print_map(const T t);
     virtual ~QuasiGrid();
     void time_update();
-    double calculate_mid_lobe_location(const int index) const;
+    double calculate_mid_lobe_location(const int index) const;///\brief calculates the location of the midlobe
     void set_system_length_scales();///\brief set the different length scales of the system
     void set_system_void_spaces();///\brief set the different void spaces of the system
     std::map<std::string,double> get_system_length_scales() const;
@@ -1560,25 +1562,56 @@ void QuasiGrid::calculate_and_set_num_particle_size_voids_at_kinetic_arrest() {
   std::cout << "num_particle_size_voids_at_kinetic_arrest:" << num_particle_size_voids_at_kinetic_arrest_ << std::endl;
   exit(0);
 }
+/***
+ *
+ */
+
 UIN QuasiGrid::calculate_num_particle_size_voids_at_kinetic_arrest() const{
   std::cout << num_particles_possible_in_system_ << "  " <<  num_intersections_ << " " << num_particles_ << std::endl;
   return  num_particles_possible_in_system_  - num_intersections_ - num_particles_;
 }
+/***
+ *
+ */
+
 template<typename T>
 void QuasiGrid::set_particle_len_at_complete_kinetic_arrest(const T l){
   particle_len_at_complete_kinetic_arrest_ = l;
 }
+/***
+ *
+ */
+
 double  QuasiGrid::get_particle_len_at_complete_kinetic_arrest() const{
   return particle_len_at_complete_kinetic_arrest_;
 }
-double  QuasiGrid::calculate_particle_len_at_complete_kinetic_arrest() const{
+/***
+ *
+ */
 
+double  QuasiGrid::calculate_particle_len_at_complete_kinetic_arrest() const{
   return system_len_/num_particles_possible_in_system_;
 }
+/***
+ *
+ */
 void    QuasiGrid::calculate_and_set_particle_len_at_complete_kinetic_arrest() const{
   particle_len_at_complete_kinetic_arrest_  = std::move(calculate_particle_len_at_complete_kinetic_arrest());
 }
 /**
  *
  **/
+std::string QuasiGrid::calculate_demangled_classname() {
+  int status;
+  std::string classname = std::string(abi::__cxa_demangle(typeid(*this).name(),0,0,&status));
+  if(!status){
+#ifdef DEBUG
+    std::cerr << "demangled status " << status << std::endl;
+#endif
+  }else {
+  }
+
+  return classname;
+}
+
 #endif

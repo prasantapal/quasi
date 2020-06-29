@@ -187,10 +187,10 @@ bool Junction::get_is_blocked() const {
   return is_blocked_;
 }
 /**
-* Occupy the junction with a particle.
-*
-*/
-void Junction::occupy(Particle* p,bool is_forward){///If forward then queue the list in the back or in the front
+ * Occupy the junction after a particle moves into it
+ *
+ */
+void Junction::occupy(Particle* p,bool is_forward){///If forward (backward) then enqueue the in list in the back (front) 
   std::cerr << "occupything junction " << this->get_label() << " with particle " << p->get_label() << std::endl;
   if(is_forward)
     this->occupations_.emplace_back(p);

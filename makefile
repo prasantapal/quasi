@@ -1,6 +1,6 @@
 PROJECT=quasigrid_test
 CC=g++-9
-CC+=-std=c++17
+CC+=-std=c++2a
 CFLAGS=-g3
 CFLAGS+=-Wall
 
