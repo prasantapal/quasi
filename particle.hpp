@@ -21,7 +21,7 @@ class Particle{
 
     void save();
     ~Particle();
-    double get_x() const;
+    decltype(auto) get_x() const;
     double get_system_len() const;
     double get_len() const;
     void set_x(const double& x);
@@ -98,7 +98,7 @@ Particle::Particle(const double& x):x_(x){
 Particle::~Particle(){
   std::cerr << __func__ << " dtor" << std::endl;
 }
-double Particle::get_x() const{
+decltype(auto) Particle::get_x() const{
   return x_;
 }
 void Particle::set_x(const double& x){

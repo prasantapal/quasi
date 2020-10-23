@@ -1,6 +1,7 @@
 #ifndef QUASI_GRID_HPP
 #define QUASI_GRID_HPP
 
+#include <string_view>
 #include "particle.hpp"
 #include "intersection.hpp"
 #include <list>
@@ -20,7 +21,7 @@ using USH = unsigned short;
 using UIN = unsigned int;
 using  JunctionRef = std::reference_wrapper<Junction> ;///This is a proposal to wrap a junction ref in a container
 
-  template<class TupType, size_t... I>
+template<class TupType, size_t... I>
 void print_tuple(const TupType& _tup, std::index_sequence<I...>) {
   std::cout << "(";
   (..., (std::cout << (I == 0? "" : ", ") << std::get<I>(_tup)));
@@ -85,6 +86,7 @@ class QuasiGrid{
     std::tuple<USH,USH> which_region_particle_belong_to(const Particle& p);
     int does_belong_to_end_lobe(const Particle& p);
     int does_belong_to_junction(const Particle& p);
+    const Junction* does_belong_to_junction_location(const double&) const;
     int does_belong_to_middle_lobe(const Particle& p) ;
     USH calculate_arm_index(const Particle& p);
     void populate_end_lobe_boundaries() ;
@@ -108,7 +110,6 @@ class QuasiGrid{
     void set_system_len(const double& len);
     double get_system_len() const;
     int get_next_junction_index(const double& x);
-    const Junction* does_belong_to_junction(const double&) const;
     inline double mod_len(const double x) { if(x>=0) return std::fmod(x,system_len_); return (system_len_ - std::fmod(std::fabs(x),system_len_)); }
     /**
      *
@@ -179,6 +180,11 @@ class QuasiGrid{
     UIN get_num_particles_possible_in_system() const;
     UIN calculate_num_particles_possible_in_system() const;
     void calculate_and_set_num_particles_possible_in_system();
+    /**
+     * Helper Functions
+     */
+    template<typename T>
+      static bool is_empty_string(const T& input) ;
     /************* STATE CALCULATIONS ******************/
     void AssignStateLablesToParticles() ;
     void set_density(const int& phi);
@@ -211,6 +217,27 @@ class QuasiGrid{
     Particle&  get_particle(const USH& index);
     void increment_simulation_time_elapsed(const  double incr = 1.0);
     void increment_simulation_steps_elapsed(const UIN incr = 1.0);
+
+
+template<typename T>
+decltype(auto) set_log_file_name(const T& log_file_name);
+decltype(auto) get_log_file_name() const;
+template<typename T>
+decltype(auto) set_data_file_name(const T& data_file_name);
+decltype(auto) get_data_file_name() const;
+
+template<typename T>
+decltype(auto) set_output_file_name(const T& output_file_name);
+decltype(auto) get_output_file_name() const;
+
+template<typename T>
+decltype(auto) set_runtime_config_file_name(const T& runtime_config_file_name);
+decltype(auto) get_runtime_config_file_name() const ;
+
+template<typename T>
+decltype(auto) set_config_file_name(const T& config_file_name) ;
+decltype(auto) get_config_file_name() const;
+
   private:
     void particle_length_dependencies();
     void quasigrid_helper();
@@ -291,7 +318,30 @@ class QuasiGrid{
     static std::string void_space_tag_average_squeezed_end_lobe_void_;
     static std::string void_space_tag_average_squeezed_middle_lobe_void_;
     static double particle_len_at_complete_kinetic_arrest_;
+    static std::string log_file_name_;
+    static std::string data_file_name_;
+    static std::string output_file_name_;
+    static std::string runtime_config_file_name_;
+    static std::string config_file_name_;
+
+    static std::string home_directory_;
+    static std::string_view constexpr log_file_name_default_ = {"quasi_log.txt"};
+    static std::string_view constexpr data_file_name_default_ = {"quasi_data.txt"};
+    static std::string_view constexpr output_file_name_default_  = {"quasi_data_output.txt"};
+    static std::string_view constexpr runtime_config_file_name_default_ = {"quasi_runtime_config_file_"};
+    static std::string_view constexpr config_file_name_default_ = {"config.json"};
+
 };
+
+std::string QuasiGrid::log_file_name_ = {"quasi_log.txt"};
+std::string QuasiGrid::data_file_name_ = {"quasi_data.txt"};
+std::string QuasiGrid::output_file_name_ = {"quasi_data_output.txt"};
+std::string QuasiGrid::runtime_config_file_name_ = {"quasi_runtime_config_file_"};
+std::string QuasiGrid::config_file_name_ = {"config.json"};
+
+
+std::string QuasiGrid::home_directory_ = {""};
+
 double QuasiGrid::particle_len_at_complete_kinetic_arrest_ = {0.0};
 std::string QuasiGrid::length_scale_tag_particle_length_ = {"particle_length"};
 std::string QuasiGrid::length_scale_tag_arm_length_= {"arm_length"};
@@ -729,7 +779,7 @@ double QuasiGrid::get_system_len() const {
 /**
  *@returns ptr to junction else nullptr
  */
-const Junction* QuasiGrid::does_belong_to_junction(const double& x) const {
+const Junction* QuasiGrid::does_belong_to_junction_location(const double& x) const {
   for(auto& it:junctions_){
     if(it->does_belong_to(x))
       return it;
@@ -1352,16 +1402,19 @@ std::tuple<USH,USH> QuasiGrid::which_region_particle_belong_to(const Particle& p
   return belongs_to;
 }
 /**
- *
+ * @returns {Junction index or -1 if it does not}
  **/
 int QuasiGrid::does_belong_to_junction(const Particle& p) {
-  auto junction_ref = does_belong_to_junction(p.get_x());
+  //auto junction_ref = does_belong_to_junction(p.get_x());
+  const double& x = p.get_x();
+  auto junction_ref = does_belong_to_junction_location(x);
   if(junction_ref != nullptr){
     return junction_ref->get_label();
   }
   /**
    *
    **/
+  /// pre defined garbage value. potentially can be defined through an enum value
   return -1;
 }
 /**
@@ -1613,5 +1666,61 @@ std::string QuasiGrid::calculate_demangled_classname() {
 
   return classname;
 }
+
+
+template<typename T>
+bool QuasiGrid::is_empty_string(const T& input) {
+  if(std::all_of(input.begin(), input.end(), [](const auto& c){ return (c == ' ') || c == '\t' || c == '\n';}))
+    return true;
+}
+
+
+template<typename T>
+decltype(auto) QuasiGrid::set_log_file_name(const T& log_file_name) {
+  log_file_name_ = log_file_name;
+}
+decltype(auto) QuasiGrid::get_log_file_name() const{
+
+  return log_file_name_;
+}
+template<typename T>
+decltype(auto) QuasiGrid::set_data_file_name(const T& data_file_name){
+
+  data_file_name_ = data_file_name;
+}
+decltype(auto) QuasiGrid::get_data_file_name() const{
+  return data_file_name_;
+}
+
+template<typename T>
+decltype(auto) QuasiGrid::set_output_file_name(const T& output_file_name){
+  output_file_name_ = output_file_name;
+
+}
+
+decltype(auto) QuasiGrid::get_output_file_name() const{
+
+  return output_file_name_;
+}
+template<typename T>
+decltype(auto) QuasiGrid::set_runtime_config_file_name(const T& runtime_config_file_name){
+  runtime_config_file_name_ = runtime_config_file_name;
+}
+
+decltype(auto) QuasiGrid::get_runtime_config_file_name() const {
+  return runtime_config_file_name_;
+
+}
+
+template<typename T>
+decltype(auto) QuasiGrid::set_config_file_name(const T& config_file_name) {
+  config_file_name_ = config_file_name;
+}
+
+decltype(auto) QuasiGrid::get_config_file_name() const {
+  return config_file_name_;
+
+}
+
 
 #endif
