@@ -21,5 +21,6 @@
 int main(int argc,char** argv){
  	std::cout << "hello world " << std::endl;
         Intersection I;
+        Junction j;
 	return 0;
 }

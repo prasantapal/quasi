@@ -3,7 +3,6 @@
 
 #include <string_view>
 #include "particle.hpp"
-#include "intersection.hpp"
 #include <list>
 #include <regex>
 #include <iostream>
@@ -16,11 +15,20 @@
 #include <random>
 #include <cmath>
 #include <cxxabi.h>
-
+#include <json/json.h>
+#include "intersection.hpp"
 using USH = unsigned short;
 using UIN = unsigned int;
-using  JunctionRef = std::reference_wrapper<Junction> ;///This is a proposal to wrap a junction ref in a container
+using  JunctionRef = std::reference_wrapper<Junction> ;
+///This is a proposal to wrap a junction ref in a container
 
+/// @brief print_tuple :
+//
+///
+/// @tparam TupType
+/// @tparam I
+/// @param _tup
+/// @param std::index_sequence
 template<class TupType, size_t... I>
 void print_tuple(const TupType& _tup, std::index_sequence<I...>) {
   std::cout << "(";
@@ -48,20 +56,70 @@ class QuasiGrid{
       Backward
     };
     enum StateLabels {
-      EndLobe,
+      EndLobeLocation,
       JunctionLocation,
-      MiddleLobe
+      MiddleLobeLocation
     };
     enum SimulationMode {///\brief defines  the mode of simulation
       FIXED_STEP_SIZE,
       ADAPTIVE_STEP_SIZE
     };
+    enum ParticleFillingStrategy{
+      direct_from_input,
+      above_below_K_g,
+      above_below_K_c
+    };
+    enum ParticleFillingMode{
+      below_N_g,
+      above_N_g,
+      below_N_c,
+      above_N_c
+    };
+
+    enum DensityMode{
+      below_phi_g,
+      above_phi_g,
+      below_phi_c,
+      above_phi_c
+    };
+
+    enum DensityDefinition{
+      direct_from_input_phi,///Taken as a direct input
+      above_below_phi_g_direct,
+      above_below_phi_g_logarithmic, /// e.g. phi_g - 10^-10
+      above_below_phi_c_logarithmic
+    };
+
     ///ctor and the rule of 5
     QuasiGrid();///\brief default ctor
     QuasiGrid(const QuasiGrid&) = delete; ///\brief copy ctor deleted to avoid extraneous copies
     QuasiGrid& operator=(QuasiGrid const& ) = delete; ///\brief same as above
     QuasiGrid& operator=(QuasiGrid&& ) = delete; ///\brief same as above
+    void init();
+    void un_init();
+
+
     std::string calculate_demangled_classname();
+    /// @brief create filename at ease
+    /// @tparam Args
+    /// @param 
+    /// @returns void
+    template <typename... Args>
+      static decltype(auto) filename_creator(Args&&... args);
+    /// \brief debug print service
+    template <typename... Args>
+      static void debug_print_service(Args&&... args);
+    /// \brief error print service
+    template <typename... Args>
+      static  void error_print_service(Args&&... args);
+    /// \brief log service
+    template <typename... Args, typename T>
+      static void log_service(Args&&... args, T& file_stream);
+    /**
+     *
+     *      STUFF about Quasi system    
+     *
+     */
 
     UIN get_num_particle_size_voids_at_kinetic_arrest() const;
     template<typename T>
@@ -180,9 +238,15 @@ class QuasiGrid{
     UIN get_num_particles_possible_in_system() const;
     UIN calculate_num_particles_possible_in_system() const;
     void calculate_and_set_num_particles_possible_in_system();
+
     /**
      * Helper Functions
      */
+
+    template<typename T>
+      Json::Value  read_json(const T& filaneme );
+    /// @brief parse_config_json
+    void parse_config_json();
     template<typename T>
       static bool is_empty_string(const T& input) ;
     /************* STATE CALCULATIONS ******************/
@@ -219,24 +283,29 @@ class QuasiGrid{
     void increment_simulation_steps_elapsed(const UIN incr = 1.0);
 
 
-template<typename T>
-decltype(auto) set_log_file_name(const T& log_file_name);
-decltype(auto) get_log_file_name() const;
-template<typename T>
-decltype(auto) set_data_file_name(const T& data_file_name);
-decltype(auto) get_data_file_name() const;
+    template<typename T>
+      decltype(auto) set_log_file_name(const T& log_file_name);
+    decltype(auto) get_log_file_name() const;
+    template<typename T>
+      decltype(auto) set_data_file_name(const T& data_file_name);
+    decltype(auto) get_data_file_name() const;
 
-template<typename T>
-decltype(auto) set_output_file_name(const T& output_file_name);
-decltype(auto) get_output_file_name() const;
+    template<typename T>
+      decltype(auto) set_output_file_name(const T& output_file_name);
+    decltype(auto) get_output_file_name() const;
 
-template<typename T>
-decltype(auto) set_runtime_config_file_name(const T& runtime_config_file_name);
-decltype(auto) get_runtime_config_file_name() const ;
+    template<typename T>
+      void set_output_folder_root(const T&);
+    decltype(auto) get_output_folder_root() const;
 
-template<typename T>
-decltype(auto) set_config_file_name(const T& config_file_name) ;
-decltype(auto) get_config_file_name() const;
+
+    template<typename T>
+      decltype(auto) set_runtime_config_file_name(const T& runtime_config_file_name);
+    decltype(auto) get_runtime_config_file_name() const ;
+
+    template<typename T>
+      decltype(auto) set_config_file_name(const T& config_file_name) ;
+    decltype(auto) get_config_file_name() const;
 
   private:
     void particle_length_dependencies();
@@ -249,24 +318,33 @@ decltype(auto) get_config_file_name() const;
     std::random_device particle_selection_{};
     std::mt19937 particle_selection_generator_{particle_selection_()};
     std::uniform_int_distribution<> particle_selection_dist_{1, 6};
+/**
+ * system params
+ *
+ */
+    int num_particles_; ///\brief N parameter
+    int num_intersections_; ///\brief J parameter
+    static USH num_particles_per_middle_arm_at_max_packing_;///\brief K parameter in the paper
     double density_;
-    double density_close_packing_;
-    double density_kinetic_arrest_;
+    double density_close_packing_; ///\brief density at closed packing
+    double density_kinetic_arrest_; ///\brief Density at the kinetic arrest
+
     double density_delta_log_scale_;
     double density_delta_;
-    int num_intersections_;
     int num_intersections_half_;
     int num_junctions_;
     int num_junctions_half_;
-    int num_particles_;
     int num_particles_possible_in_system_at_closed_packing_;
     int num_particle_size_voids_at_kinetic_arrest_;
+    /**
+     * Length scales
+     */
+    double system_len_;
     double particle_len_;
     double particle_len_at_critical_packing_;
     double particle_len_half_;
-    double system_len_;
     double system_len_half_;
-    double len_at_kinetic_arrest_;
+    double particle_len_at_kinetic_arrest_;
     std::vector<Particle> particles_;
     std::vector<Intersection> intersections_;
     std::list<int> blocked_intersections_; ///This contains the labels for blocked intersections
@@ -277,13 +355,11 @@ decltype(auto) get_config_file_name() const;
     static double arm_length_;
     static double arm_void_length_;
     static int default_arm_offset_;
-    static USH num_particles_per_middle_arm_at_max_packing_;///\brief K parameter in the paper
-    static UIN num_particles_at_closed_packing_;///\brief $N^{cp}$ parameter in the paper
-    static UIN num_particles_possible_in_system_;///\brief $N^{cp}$ parameter in the paper
-    //    static UIN max_no_of_particles_at_kinetic_arrest_;///\brief this is the max number of particles when the system can still move
+    static UIN num_particles_at_closed_packing_;///\brief $N^{g}$ parameter in the paper
+    static UIN num_particles_possible_in_system_;///\brief $N^{total}$ parameter in the paper
     static UIN min_num_particles_at_kinetic_arrest_;///\brief min number of particles when the sytem can move and also KA happens
-    static UIN max_num_particles_at_kinetic_arrest_;///\brief min number of particles when the sytem can move and also KA happens
     static UIN no_of_particles_above_min_no_particles_at_kinetic_arrest_;
+    static UIN max_num_particles_at_kinetic_arrest_;///\brief min number of particles when the sytem can move and also KA happens
     static UIN range_of_particles_between_min_to_max_at_kinetic_arrest_;
     static USH max_allowed_particles_in_end_lobes_at_max_packing_;
     static UIN min_particle_size_voids_needed_for_kinetic_arrest_;
@@ -294,6 +370,9 @@ decltype(auto) get_config_file_name() const;
     std::string trajectory_input_file_complete_path_ = {""};
     std::string output_file_path_ = {""};///\brief output folder path
     std::string trajectory_output_file_complete_path_ = {""};
+    /**
+     * System state
+     */
     std::vector<UIN> system_state_;
     std::string system_state_string_;
     UIN system_state_size_;
@@ -330,9 +409,17 @@ decltype(auto) get_config_file_name() const;
     static std::string_view constexpr output_file_name_default_  = {"quasi_data_output.txt"};
     static std::string_view constexpr runtime_config_file_name_default_ = {"quasi_runtime_config_file_"};
     static std::string_view constexpr config_file_name_default_ = {"config.json"};
-
+    static Json::Reader json_reader_;
+    static bool is_config_json_set_;
+    static   Json::Value config_json_root_;
+    static std::string output_folder_root_;
+    static std::string_view constexpr output_folder_root_default_ = {"output"};
 };
+std::string QuasiGrid::output_folder_root_ = {std::string(output_folder_root_default_)};
+bool QuasiGrid::is_config_json_set_ = {false};
 
+Json::Value QuasiGrid::config_json_root_;
+/// KEY
 std::string QuasiGrid::log_file_name_ = {"quasi_log.txt"};
 std::string QuasiGrid::data_file_name_ = {"quasi_data.txt"};
 std::string QuasiGrid::output_file_name_ = {"quasi_data_output.txt"};
@@ -406,6 +493,16 @@ void QuasiGrid::populate_junction_conjugates(){
    *
    **/
 }
+void QuasiGrid::init(){
+  if(is_config_json_set_){
+    config_json_root_ = read_json(config_file_name_);
+  }else {
+    std::cout << "sorry config json is not set...quit()" << std::endl;
+    exit(0);
+  }
+  parse_config_json();
+
+}
 /**
  *
  **/
@@ -415,6 +512,7 @@ std::string QuasiGrid::class_name_ = {""};
 QuasiGrid::QuasiGrid(){
   quasigrid_helper();
   std::cerr << class_name_ << " ctor" << std::endl;
+
 }
 /**
  *
@@ -1271,7 +1369,7 @@ std::vector<UIN> QuasiGrid::calculate_system_state() {
     auto region_index = std::get<1>(region);
     short vector_location = {0};
     switch(region_label){
-      case StateLabels::EndLobe:
+      case StateLabels::EndLobeLocation:
         std::cout << "end lobe:" << region_index << " " <<  system_state.at(vector_location)<< std::endl;
         vector_location = (region_index == 0)?region_index:(system_state_size_-1);
         system_state.at(vector_location)++;
@@ -1296,7 +1394,7 @@ std::vector<UIN> QuasiGrid::calculate_system_state() {
          *
          **/
         break;
-      case StateLabels::MiddleLobe:
+      case StateLabels::MiddleLobeLocation:
         std::cout << "mid lobe location:" << region_index << " num arms " << num_arms_ << " " << num_arms_half_  << std::endl;
         if(region_index < num_arms_half_ ){
           vector_location = 2 + 3*(region_index-1);
@@ -1383,14 +1481,14 @@ std::tuple<USH,USH> QuasiGrid::which_region_particle_belong_to(const Particle& p
   location = does_belong_to_end_lobe(p);
   std::tuple<USH,USH> belongs_to;
   if( location >= 0){
-    belongs_to = decltype(belongs_to)(StateLabels::EndLobe,location);
+    belongs_to = decltype(belongs_to)(StateLabels::EndLobeLocation,location);
   }else {
     location = does_belong_to_junction(p);
     if(location >= 0){
       belongs_to = decltype(belongs_to)(StateLabels::JunctionLocation,location);
     }else {
       location = calculate_arm_index(p);
-      belongs_to = decltype(belongs_to)(StateLabels::MiddleLobe,location);
+      belongs_to = decltype(belongs_to)(StateLabels::MiddleLobeLocation,location);
     }
     /**
      *
@@ -1715,6 +1813,7 @@ decltype(auto) QuasiGrid::get_runtime_config_file_name() const {
 template<typename T>
 decltype(auto) QuasiGrid::set_config_file_name(const T& config_file_name) {
   config_file_name_ = config_file_name;
+  is_config_json_set_ = true;
 }
 
 decltype(auto) QuasiGrid::get_config_file_name() const {
@@ -1722,5 +1821,225 @@ decltype(auto) QuasiGrid::get_config_file_name() const {
 
 }
 
+
+/// @brief parse_config_json 
+void QuasiGrid::parse_config_json(){
+  if(!is_config_json_set_){
+    //error_print_service("please set config.json file...exit");
+    exit(0);
+  }
+  Json::Value json = config_json_root_;
+  std::string key = "";
+  // Get the value of the member of root named 'encoding',
+  // and return 'UTF-8' if there is no such member.
+  std::string json_encoding = "UTF-8";
+  std::string encoding = json.get("encoding", json_encoding.c_str() ).asString();
+  std::string project_name = json.get("project_name", json_encoding.c_str() ).asString();
+  std::cout << "project_name:" << project_name << std::endl;
+  key="output_folder_root";
+  std::string output_folder_root = json.get(key,json_encoding.c_str()).asString();
+  set_output_folder_root(output_folder_root);
+  //  key = "is_multi_threaded";
+  //  auto is_multi_threaded = json.get(key, json_encoding.c_str() ).asBool();
+  //  set_is_multi_threaded(is_multi_threaded);
+  //  debug_print_service("set_is_multi_threaded:",is_multi_threaded_);
+  //  key = "is_recursive_processing";
+  //  auto is_recursive_processing = json.get(key, json_encoding.c_str() ).asBool();
+  //  set_is_recursive_processing(is_recursive_processing);
+  //  debug_print_service("is_recursive_processing:",is_recursive_processing_);
+  //  key = "image_kernel_radius";
+  //  auto image_kernel_radius = json.get(key, json_encoding.c_str() ).asInt();
+  //  set_image_kernel_radius(image_kernel_radius);
+  //  debug_print_service("image_kernel_radius:",image_kernel_radius_);
+  //  std::cout << "setting image kernel radius:" <<  image_kernel_radius_ << std::endl;
+  //  key = "data_block_window_size_increment_step";
+  //  auto data_block_window_size_increment_step = json.get(key, json_encoding.c_str() ).asInt();
+  //  set_data_block_window_size_increment_step(data_block_window_size_increment_step);
+  //  debug_print_service("is_recursive_processing:",is_recursive_processing_);
+  //  key = "recursion_depth_max";
+  //  auto recursion_depth_max = json.get(key, json_encoding.c_str() ).asInt();
+  //  set_recursion_depth_max(recursion_depth_max);
+  //  debug_print_service("recursion_depth_max:",recursion_depth_max);
+  //  std::cout << "recursion_depth_max:" << recursion_depth_max_ << std::endl;
+  //  key = "data_processing_domain_type";
+  //  auto data_processing_domain_type = json.get(key, json_encoding.c_str() ).asInt();
+  //  set_data_processing_domain_type(data_processing_domain_type);
+  //  debug_print_service("data_processing_domain_type:",data_processing_domain_type);
+  //  std::cout << "data_processing_domain_type:" << data_processing_domain_type << std::endl;
+  //  Json::Value  data_processing = json.get("data_processing", json_encoding.c_str());
+  //  ///\brief set outlier threshold factor. the factor by which 3*MAD would be multiplied to get the final threshold value
+  //  key = "outlier_threshold_factor";
+  //  auto outlier_threshold_factor = data_processing[key].asFloat();
+  //  set_outlier_threshold_factor(outlier_threshold_factor);
+  //  debug_print_service("outlier_threshold_factor:",outlier_threshold_factor);
+  //  key = "raw_data_file_start_column_input";
+  //  auto raw_data_file_start_column_input = data_processing[key].asInt();
+  //  set_raw_data_file_start_column_input(raw_data_file_start_column_input);
+  //  key = "raw_data_file_end_column_input";
+  //  auto data_file_end_column_input = data_processing[key].asInt();
+  //  set_data_file_end_column_input(data_file_end_column_input);
+  //  debug_print_service("data_file_end_column_input:", raw_data_file_end_column_input_," raw_data_file_start_column_input:",raw_data_file_start_column_input_);
+  //  key = "correction_type";
+  //  auto correction_type = data_processing[key].asString();
+  //  set_correction_type(correction_type);
+  //  USH val = get_correction_type();
+  //  key = "data_sampling_rate";
+  //  auto data_sampling_rate = data_processing[key].asFloat();
+  //  set_data_sampling_rate(data_sampling_rate);
+  //  key = "time_unit";
+  //  auto time_unit = data_processing[key].asString();
+  //  ///\brief ignore the case sensitivity from user input
+  //  transform(time_unit.begin(), time_unit.end(), time_unit.begin(), ::tolower);
+  //  /*
+  //   *
+  //   */
+  //  auto time_unit_enum = TimeUnitDescriptor[time_unit]; /// \breif set the time unit in terms of descriptor
+  //  debug_print_service("time_unit_enum:",time_unit_enum);
+  //  set_time_unit(time_unit_enum);
+  //  /**
+  //   * window and overlap keys
+  //   */
+  //  key = "spatial_correction_zonal_coverage_depth";
+  //  auto spatial_correction_zonal_coverage_depth = data_processing[key].asInt(); /// \brief how much of the spatial correction to cover
+  //  set_spatial_correction_zonal_coverage_depth(spatial_correction_zonal_coverage_depth);
+  //  debug_print_service("get_spatial_correction_zonal_coverage_depth:",get_spatial_correction_zonal_coverage_depth());
+  //  /**
+  //   * Data blocks and overlaps
+  //   * *****************************************************************
+  //   */
+  //  key = "data_block_window_size_common_dual";
+  //  auto data_block_window_size_common_dual = data_processing[key].asInt();
+  //  set_data_block_window_common_dual(data_block_window_size_common_dual);
+  //  debug_print_service("get_data_block_window_size_common_dual:",get_data_block_window_size_common_dual());
+  //  /**
+  //   *
+  //   */
+  //  key = "data_block_window_size_common_dual_overlap_percent";
+  //  auto data_block_window_size_common_dual_overlap_percent = data_processing[key].asFloat();
+  //  set_data_block_window_size_common_dual_overlap_percent(data_block_window_size_common_dual_overlap_percent);
+  //  debug_print_service("get_data_block_window_overlap_percent:",get_data_block_window_size_common_dual_overlap_percent());
+  //  /**
+  //   *
+  //   */
+  //  key = "data_block_window_temporal";
+  //  auto data_block_window_temporal = data_processing[key].asInt();
+  //  set_data_block_window_temporal(data_block_window_temporal);
+  //  debug_print_service("get_data_block_window_temporal:",get_data_block_window_temporal());
+  //  /**
+  //   *
+  //   */
+  //  key = "data_block_window_temporal_common_overlap_percent";
+  //  auto data_block_window_temporal_common_overlap_percent = data_processing[key].asFloat();
+  //  set_data_block_window_temporal_common_overlap_percent(data_block_window_temporal_common_overlap_percent);
+  //  debug_print_service("get_data_block_window_temporal_common_overlap_percent:",get_data_block_window_temporal_common_overlap_percent());
+  //  /**
+  //   *
+  //   */
+  //  key = "data_block_window_spatial";
+  //  auto data_block_window_spatial = data_processing[key].asInt();
+  //  set_data_block_window_spatial(data_block_window_spatial);
+  //  debug_print_service ( "get_data_block_window_spatial():", get_data_block_window_spatial() );
+  //  /**
+  //   *
+  //   */
+  //  key = "data_block_window_spatial_common_overlap_percent";
+  //  auto data_block_window_spatial_overlap_percent = data_processing[key].asFloat();
+  //  set_data_block_window_spatial_common_overlap_percent(data_block_window_spatial_overlap_percent);
+  //  debug_print_service("get_data_block_window_spatial_overlap_percent:",get_data_block_window_spatial_common_overlap_percent());
+  //  /**
+  //   *
+  //   *
+  //   */
+  //  key = "is_temporal_polyfit_applied";
+  //  auto is_temporal_polyfit_applied = data_processing[key].asFloat();
+  //  set_is_temporal_polyfit_applied(is_temporal_polyfit_applied);
+  //  debug_print_service("get_is_temporal_polyfit_applied:",get_is_temporal_polyfit_applied());
+  //  key = "temporal_polyfit_order";
+  //  auto temporal_polyfit_order = data_processing[key].asFloat();
+  //  set_temporal_polyfit_order(temporal_polyfit_order);
+  //  debug_print_service( "get_temporal_polyfit_order:", get_temporal_polyfit_order());
+  //  key = "is_half_gaussian_smoothing_applied";
+  //  auto is_half_gaussian_smoothing_applied = data_processing[key].asFloat();
+  //  set_is_half_gaussian_smoothing_applied(is_half_gaussian_smoothing_applied);
+  //  debug_print_service("get_is_half_gaussian_smoothing_applied:",get_is_half_gaussian_smoothing_applied());
+  exit(0);
+
+}
+
+/**
+ * \brief read the config.json file
+ */
+template<typename T>
+Json::Value   QuasiGrid::read_json(const T& filename ){
+  Json::Value root;
+  Json::Reader reader;
+  std::ifstream file(filename.c_str());
+  if(!reader.parse(file, root, true)){
+    //for some reason if it fails to parse
+    //        error_print_service("Failed to parse configuration for file ",filename,reader.getFormattedErrorMessages());
+  }
+  return root;
+}
+template<typename T>
+void QuasiGrid::set_output_folder_root(const T& output_folder_root) {
+  output_folder_root_ = output_folder_root;
+}
+
+/// @brief
+///
+/// @param {void}
+decltype(auto) QuasiGrid::get_output_folder_root() const{
+  return output_folder_root_;
+}
+
+
+/**
+ *
+ *
+ */
+template <typename... Args>
+void QuasiGrid::error_print_service(Args&&... args) {
+  static std::mutex error_print_mutex;
+#ifdef ERROR_OUTPUT
+  const std::lock_guard<std::mutex> lock(error_print_mutex);
+  ((std::cerr << std::forward<Args>(args) << std::endl), ...);
+#endif
+}
+/**
+ *A custom filename creator based on arguments
+ */
+template <typename... Args>
+decltype(auto) QuasiGrid::filename_creator(Args&&... args){
+  std::stringstream ss;
+  ((ss << std::forward<Args>(args)), ...);
+  return ss.str();
+}
+/**
+ * \brief  printing service for  dubuging purpose
+ */
+  template <typename... Args>
+void QuasiGrid::debug_print_service(Args&&... args)
+{
+  static std::mutex debug_print_mutex;
+#ifdef IS_DEBUG
+  const std::lock_guard<std::mutex> lock(debug_print_mutex);
+  ((std::cout << std::forward<Args>(args) << " "), ...);
+#ifdef IS_DEBUG_WITH_ENDL
+  std::cout << std::endl;
+#endif
+#endif
+}
+/// @brief A log printing service
+/// @tparam Args
+/// @tparam T
+/// @param args
+/// @param file_stream
+template <typename... Args, typename T>
+void QuasiGrid::log_service(Args&&... args, T& file_stream) {
+  std::mutex log_mutex;
+  const std::lock_guard<std::mutex> lock(log_mutex);
+  ((file_stream << std::forward<Args>(args) << " "), ...);
+  file_stream << std::endl;
+}
 
 #endif
