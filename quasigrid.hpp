@@ -1,6 +1,6 @@
 #ifndef QUASI_GRID_HPP
 #define QUASI_GRID_HPP
-
+#define IS_DEBUG
 #include <string_view>
 #include "particle.hpp"
 #include <list>
@@ -76,6 +76,13 @@ class QuasiGrid{
       above_N_c
     };
 
+    enum DensityDefinition{
+      direct_from_input_phi,///Taken as a direct input
+      above_below_phi_g_direct,
+      above_below_phi_g_logarithmic, /// e.g. phi_g - 10^-10
+      above_below_phi_c_logarithmic
+    };
+
     enum DensityMode{
       below_phi_g,
       above_phi_g,
@@ -83,12 +90,9 @@ class QuasiGrid{
       above_phi_c
     };
 
-    enum DensityDefinition{
-      direct_from_input_phi,///Taken as a direct input
-      above_below_phi_g_direct,
-      above_below_phi_g_logarithmic, /// e.g. phi_g - 10^-10
-      above_below_phi_c_logarithmic
-    };
+    static USH density_definition_;
+    static USH constexpr density_definition_default_ = {DensityDefinition::above_below_phi_g_logarithmic};
+
 
     ///ctor and the rule of 5
     QuasiGrid();///\brief default ctor
@@ -165,9 +169,7 @@ class QuasiGrid{
     double calculate_particle_len()const;
     void calculate_and_set_particle_len();
     void set_junction_coordinates() const;
-    void set_system_len(const double& len);
-    double get_system_len() const;
-    int get_next_junction_index(const double& x);
+   int get_next_junction_index(const double& x);
     inline double mod_len(const double x) { if(x>=0) return std::fmod(x,system_len_); return (system_len_ - std::fmod(std::fabs(x),system_len_)); }
     /**
      *
@@ -192,9 +194,8 @@ class QuasiGrid{
     double calculate_density_from_density_delta_and_kinetic_arrest_density() const ;
     void calculate_and_set_density_from_density_delta_and_kinetic_arrest_density();
     /************* SYSTEM DEFINITIONS  ***************/
-    void set_num_particles( const int n);
-    int get_num_particles() const ;
-    UIN calculate_num_particles_from_filling_mode();
+
+        UIN calculate_num_particles_from_filling_mode();
     UIN calculate_and_set_num_particles_from_filling_mode();
     void set_num_intersections( const int n);
     UIN get_num_intersections() const ;
@@ -245,17 +246,52 @@ class QuasiGrid{
 
     template<typename T>
       Json::Value  read_json(const T& filaneme );
-    /// @brief parse_config_json
+    /// @brief parse the config json file
     void parse_config_json();
+    /// @brief is_empty_string 
+    ///
+    /// @tparam T
+    /// @param input
+    ///
+    /// @returns   
     template<typename T>
       static bool is_empty_string(const T& input) ;
     /************* STATE CALCULATIONS ******************/
+    /// @brief AssignStateLablesToParticles 
     void AssignStateLablesToParticles() ;
+    /// @brief set_density 
+    ///
+    /// @param phi
     void set_density(const int& phi);
+    /// @brief get_density 
+    ///
+    /// @returns   
+    /// @brief get_density 
+    ///
+    /// @returns   
+    /// @brief get_density 
+    ///
+    /// @returns   
     double get_density() const;
+    /// @brief calculate_density 
+    ///
+    /// @returns   
+    /// @brief calculate_density 
+    ///
+    /// @returns   
     double calculate_density() const;
+    /// @brief calculate_and_set_density 
     void calculate_and_set_density();
+    /// @brief set_arm_void_length 
+    ///
+    /// @param double
+    /// @brief set_arm_void_length 
+    ///
+    /// @param double
     void set_arm_void_length(const double&);
+    /// @brief get_arm_void_length 
+    ///
+    /// @returns   
     double get_arm_void_length() const;
     double calculate_arm_void_length() const;
     void calculate_and_set_arm_void_length();
@@ -308,113 +344,227 @@ class QuasiGrid{
     decltype(auto) get_config_file_name() const;
 
   private:
+    /// @brief particle_length_dependencies 
     void particle_length_dependencies();
+    /// @brief helper functions 
     void quasigrid_helper();
     static std::string class_name_;
     /*************** Dynamics and Distribution...later to be moved to a class ********/
     std::random_device particle_motion_{};
     std::mt19937 particle_motion_generator_{particle_motion_()};
-    std::normal_distribution<> normal_dist_{0,1};
+    /// @brief generates normal distribution between 0 to 1
+    std::normal_distribution<> normal_dist_{0, 1};
+    /// @brief 
     std::random_device particle_selection_{};
+    /// @brief particle_selection_generator_{particle_selection_ 
+    ///
+    /// @returns   
     std::mt19937 particle_selection_generator_{particle_selection_()};
+    /// @brief generates integer between 1-6
     std::uniform_int_distribution<> particle_selection_dist_{1, 6};
 /**
  * system params
  *
  */
+  public:
+    /// @brief set_num_particles 
+    ///
+    /// @param n
+    void set_num_particles( const int n);
+    /// @brief get_num_particles 
+    ///
+    /// @returns   
+    int get_num_particles() const ;
+    /// @brief 
     int num_particles_; ///\brief N parameter
+  private:
+    /// @brief 
     int num_intersections_; ///\brief J parameter
+    /// @brief 
     static USH num_particles_per_middle_arm_at_max_packing_;///\brief K parameter in the paper
+    /// @brief 
     double density_;
+    /// @brief 
     double density_close_packing_; ///\brief density at closed packing
+    /// @brief 
     double density_kinetic_arrest_; ///\brief Density at the kinetic arrest
 
+    /// @brief 
     double density_delta_log_scale_;
+    /// @brief 
+    /// @brief 
+    /// @brief 
     double density_delta_;
+    /// @brief 
     int num_intersections_half_;
+    /// @brief 
     int num_junctions_;
+    /// @brief 
     int num_junctions_half_;
+    /// @brief 
     int num_particles_possible_in_system_at_closed_packing_;
+    /// @brief 
     int num_particle_size_voids_at_kinetic_arrest_;
     /**
      * Length scales
      */
+  public:
+    void set_system_len(const double& len);
+    double get_system_len() const;
+    /// @brief 
+  private:
     double system_len_;
+    /// @brief 
     double particle_len_;
+    /// @brief 
     double particle_len_at_critical_packing_;
+    /// @brief 
     double particle_len_half_;
+    /// @brief 
     double system_len_half_;
+    /// @brief 
     double particle_len_at_kinetic_arrest_;
+    /// @brief 
     std::vector<Particle> particles_;
+    /// @brief 
     std::vector<Intersection> intersections_;
+    /// @brief 
     std::list<int> blocked_intersections_; ///This contains the labels for blocked intersections
     ///Make a vector tuple based on junction index with the contents being
     std::vector<Junction *> junctions_;
     //    std::vector<JunctionRef> junction_refs_;
     std::multimap<int,int> junction_conjugates_;
+    /// @brief 
     static double arm_length_;
+    /// @brief 
     static double arm_void_length_;
+    /// @brief 
     static int default_arm_offset_;
+    /// @brief 
     static UIN num_particles_at_closed_packing_;///\brief $N^{g}$ parameter in the paper
+    /// @brief 
     static UIN num_particles_possible_in_system_;///\brief $N^{total}$ parameter in the paper
+    /// @brief 
     static UIN min_num_particles_at_kinetic_arrest_;///\brief min number of particles when the sytem can move and also KA happens
     static UIN no_of_particles_above_min_no_particles_at_kinetic_arrest_;
+    /// @brief 
     static UIN max_num_particles_at_kinetic_arrest_;///\brief min number of particles when the sytem can move and also KA happens
     static UIN range_of_particles_between_min_to_max_at_kinetic_arrest_;
+    /// @brief 
     static USH max_allowed_particles_in_end_lobes_at_max_packing_;
+    /// @brief 
     static UIN min_particle_size_voids_needed_for_kinetic_arrest_;
+    /// @brief 
     static double kinetic_arrest_length_scale_;
+    /// @brief 
     std::string trajectory_output_filename_ = {""};
+    /// @brief 
     std::string trajectory_input_filename_ = {""};
+    /// @brief 
     std::string input_file_path_ = {""};///\brief input folder path
+    /// @brief 
     std::string trajectory_input_file_complete_path_ = {""};
+    /// @brief 
     std::string output_file_path_ = {""};///\brief output folder path
+    /// @brief 
     std::string trajectory_output_file_complete_path_ = {""};
     /**
      * System state
      */
     std::vector<UIN> system_state_;
+    /// @brief 
     std::string system_state_string_;
+    /// @brief 
     UIN system_state_size_;
+    /// @brief 
     static std::string system_state_delimiter_;
+    /// @brief  bounaries of the lower lobe
     static std::vector<std::tuple<double,double>> lower_end_lobe_boundaries_;
+    /// @brief  boundaries of the upper lobe
     static std::vector<std::tuple<double,double>> upper_end_lobe_boundaries_;
+    /// @brief number of arm 2*(J + 1)
     static UIN  num_arms_;
+    /// @brief  2*num_arms_
     static UIN  num_arms_half_;
-    static std::map<std::string,double> system_length_scales_; ///Different length scales
-    static std::map<std::string,double> system_void_spaces_; ///Different void spaces
+    /// @brief length scales of the system 
+    static std::map<std::string,double> system_length_scales_; 
+    /// @brief length scales of the void spaces
+    static std::map<std::string,double> system_void_spaces_; 
+    /// @brief 
     static short int simulation_mode_;
+    /// @brief 
     static double simulation_time_elapsed_;
+    /// @brief 
     static long long simulation_steps_elapsed_;
+    /// @brief 
     static std::string length_scale_tag_particle_length_;
+    /// @brief 
     static std::string length_scale_tag_arm_length_;
+    /// @brief 
     static std::string length_scale_tag_end_lobe_length_;
+    /// @brief 
     static std::string length_scale_tag_middle_lobe_length_;
+    /// @brief 
+    /// @brief 
     static std::string void_space_tag_total_system_wide_void_;
+    /// @brief 
     static std::string void_space_tag_total_junction_corrected_system_wide_void_;
+    /// @brief 
     static std::string void_space_tag_squeezed_end_lobe_void_;
+    /// @brief 
     static std::string void_space_tag_squeezed_middle_lobe_void_;
+    /// @brief 
     static std::string void_space_tag_average_squeezed_end_lobe_void_;
+    /// @brief 
     static std::string void_space_tag_average_squeezed_middle_lobe_void_;
+    /// @brief 
     static double particle_len_at_complete_kinetic_arrest_;
+    /// @brief 
     static std::string log_file_name_;
+    /// @brief 
     static std::string data_file_name_;
+    /// @brief 
     static std::string output_file_name_;
+    /// @brief 
     static std::string runtime_config_file_name_;
+    /// @brief 
     static std::string config_file_name_;
 
+    /// @brief 
     static std::string home_directory_;
+    /// @brief 
     static std::string_view constexpr log_file_name_default_ = {"quasi_log.txt"};
+    /// @brief 
     static std::string_view constexpr data_file_name_default_ = {"quasi_data.txt"};
+    /// @brief 
     static std::string_view constexpr output_file_name_default_  = {"quasi_data_output.txt"};
+    /// @brief 
     static std::string_view constexpr runtime_config_file_name_default_ = {"quasi_runtime_config_file_"};
+    /// @brief 
     static std::string_view constexpr config_file_name_default_ = {"config.json"};
+    /// @brief 
     static Json::Reader json_reader_;
+    /// @brief 
     static bool is_config_json_set_;
-    static   Json::Value config_json_root_;
+    /// @brief 
+    static Json::Value config_json_root_;
+    /// @brief 
     static std::string output_folder_root_;
+    /// @brief 
     static std::string_view constexpr output_folder_root_default_ = {"output"};
+    /// @brief 
+    static std::string_view constexpr project_name_default_ = {"Quasi One Dimensional Models"};
+  public:
+    template<typename T>
+      void set_project_name(const T&);
+    decltype(auto) get_project_name() const;
+  private:
+    static std::string project_name_;
 };
+/// Initialize the static variables
+std::string  QuasiGrid::project_name_ =  {std::string(project_name_default_)};
+
+USH QuasiGrid::density_definition_ = {density_definition_default_};
 std::string QuasiGrid::output_folder_root_ = {std::string(output_folder_root_default_)};
 bool QuasiGrid::is_config_json_set_ = {false};
 
@@ -1836,9 +1986,23 @@ void QuasiGrid::parse_config_json(){
   std::string encoding = json.get("encoding", json_encoding.c_str() ).asString();
   std::string project_name = json.get("project_name", json_encoding.c_str() ).asString();
   std::cout << "project_name:" << project_name << std::endl;
-  key="output_folder_root";
-  std::string output_folder_root = json.get(key,json_encoding.c_str()).asString();
+  set_project_name(project_name);
+
+  /// @brief get the io_settings 
+  key="setting";
+  Json::Value io_setting = json[key];
+  std::cout << "io_setting :" << io_setting << std::endl;
+
+  /// @brief 
+  //
+  key = "output_folder_root";
+  std::string output_folder_root = io_setting.get(key, json_encoding.c_str()).asString();
+  std::cout << output_folder_root << std::endl;
+  debug_print_service("output_folder_root:", output_folder_root);
   set_output_folder_root(output_folder_root);
+  debug_print_service("output_folder_root:", output_folder_root);
+
+
   //  key = "is_multi_threaded";
   //  auto is_multi_threaded = json.get(key, json_encoding.c_str() ).asBool();
   //  set_is_multi_threaded(is_multi_threaded);
@@ -2041,5 +2205,20 @@ void QuasiGrid::log_service(Args&&... args, T& file_stream) {
   ((file_stream << std::forward<Args>(args) << " "), ...);
   file_stream << std::endl;
 }
+/// @brief set_project_name 
+///
+/// @tparam T
+/// @param project_name
+template<typename T>
+void QuasiGrid::set_project_name(const T& project_name) {
+  project_name_ =  std::move(project_name);
+}
+/// @brief decltype 
+///
+/// @param 
+decltype(auto) QuasiGrid::get_project_name() const{
+  return project_name_;
+}
+
 
 #endif
